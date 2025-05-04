@@ -1,0 +1,271 @@
+DROP DATABASE IF EXISTS myacademy_db;
+CREATE DATABASE myacademy_db;
+USE myacademy_db;
+
+-- Tabla de Usuarios
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    image VARCHAR(255),
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    rol ENUM('user', 'admin', 'teacher') DEFAULT 'user' NOT NULL,
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_verified BOOLEAN DEFAULT FALSE,
+    verification_token VARCHAR(255),
+    reset_token VARCHAR(255),
+    token_expiration DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+-- Tabla de Cursos (Oposiciones)
+CREATE TABLE cursos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    image VARCHAR(255),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+-- Tabla de Matrícula: usuarios_cursos
+CREATE TABLE usuarios_cursos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    curso_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE CASCADE
+);
+
+
+-- Tabla de Categorías
+CREATE TABLE categorias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    image VARCHAR(255),
+    description TEXT,
+    curso_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE CASCADE
+);
+
+
+-- Tabla de Temas
+CREATE TABLE temas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    indice_tema INT,
+    name VARCHAR(255) NOT NULL,
+    image VARCHAR(255),
+    description TEXT,
+    pdf_url VARCHAR(255),
+    category_id INT,
+    curso_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categorias(id) ON DELETE CASCADE,
+    FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE CASCADE
+);
+
+
+-- Tabla de Videoclases
+CREATE TABLE videoclases (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    image VARCHAR(255),
+    description TEXT,
+    video_url VARCHAR(255),
+    duration INT,
+    tema_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (tema_id) REFERENCES temas(id) ON DELETE CASCADE
+);
+
+
+-- Tabla de Tests
+CREATE TABLE tests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    image VARCHAR(255),
+    description TEXT,
+    num_questions INT DEFAULT 0,
+    tema_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (tema_id) REFERENCES temas(id) ON DELETE CASCADE
+);
+
+
+-- Tabla de Preguntas
+CREATE TABLE preguntas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    question TEXT NOT NULL,
+    option1 TEXT NOT NULL,
+    option2 TEXT NOT NULL,
+    option3 TEXT,
+    option4 TEXT,
+    right_answer INT DEFAULT NULL, -- 1, 2, 3, 4
+    answer_explained TEXT,
+    difficulty ENUM('easy', 'medium', 'hard') DEFAULT 'medium',
+    test_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
+    CONSTRAINT unique_question UNIQUE (question, option1, option2, option3, option4)
+);
+
+
+-- Tabla de Resultados
+CREATE TABLE resultados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    aciertos INT NOT NULL DEFAULT 0,
+    errores INT NOT NULL DEFAULT 0,
+    en_blanco INT NOT NULL DEFAULT 0,
+    score FLOAT NOT NULL DEFAULT 0,
+    timeTaken FLOAT DEFAULT 0,
+    test_id INT NOT NULL,
+    user_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE
+);
+
+-- Tabla de respuestas del usuario
+CREATE TABLE respuestas_usuario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    resultado_id INT NOT NULL,
+    question_id INT NOT NULL,
+    respuesta_usuario INT DEFAULT NULL,
+    respuesta_correcta INT DEFAULT NULL,
+    es_respondida BOOLEAN DEFAULT FALSE,
+    es_correcta BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (question_id) REFERENCES preguntas(id) ON DELETE CASCADE,
+    FOREIGN KEY (resultado_id) REFERENCES resultados(id) ON DELETE CASCADE
+);
+
+-- Tabla de Foros
+CREATE TABLE Foros (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT
+);
+
+-- Tabla de Hilos
+CREATE TABLE Hilos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    contenido TEXT,
+    fecha_creacion DATETIME NOT NULL,
+    foro_id INT,
+    FOREIGN KEY (foro_id) REFERENCES Foros(id)
+);
+
+-- Tabla de Mensajes
+CREATE TABLE Mensajes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    contenido TEXT NOT NULL,
+    fecha_creacion DATETIME NOT NULL,
+    usuario_id INT,
+    hilo_id INT,
+    FOREIGN KEY (usuario_id) REFERENCES Usuarios(id),
+    FOREIGN KEY (hilo_id) REFERENCES Hilos(id)
+);
+
+-- Insertar usuarios de prueba
+INSERT INTO usuarios (name, image, email, password, rol, is_verified)
+VALUES 
+  ('Juan Pérez', 'https://example.com/images/juan.jpg', 'juan@example.com', 'password123', 'user', TRUE),
+  ('Ana López', 'https://example.com/images/ana.jpg', 'ana@example.com', 'password456', 'admin', TRUE),
+  ('Carlos García', 'https://example.com/images/carlos.jpg', 'carlos@example.com', 'password789', 'teacher', TRUE),
+  ('María Fernández', 'https://example.com/images/maria.jpg', 'maria@example.com', 'password101', 'user', FALSE),
+  ('Pedro Sánchez', 'https://example.com/images/pedro.jpg', 'pepe@gmail.com', '$2b$10$FcQmrHZiO8J2Z2lKdSZJVOTO2U/hfjVoBvWC1j2X0WsObrUOnC.lO', 'user', TRUE);
+
+
+-- Insertar cursos de prueba
+INSERT INTO cursos (name, image, description)
+VALUES 
+  ('Curso de Matemáticas', 'https://example.com/images/math.jpg', 'Curso completo de matemáticas con ejercicios y teorías.'),
+  ('Curso de Historia', 'https://example.com/images/history.jpg', 'Curso de historia con enfoque en las civilizaciones antiguas.'),
+  ('Curso de Ciencias', 'https://example.com/images/science.jpg', 'Curso de ciencias, cubriendo biología, química y física.'),
+  ('Curso de Lengua Española', 'https://example.com/images/spanish.jpg', 'Curso de lengua española para mejorar gramática y vocabulario.'),
+  ('Curso de Filosofía', 'https://example.com/images/philosophy.jpg', 'Curso introductorio a la filosofía con temas de ética, lógica, y metafísica.');
+
+
+-- Insertar registros de matrícula (usuarios matriculados en cursos)
+INSERT INTO usuarios_cursos (usuario_id, curso_id)
+VALUES 
+  (1, 1), -- Juan Pérez en Curso de Matemáticas
+  (2, 2), -- Ana López en Curso de Historia
+  (3, 3), -- Carlos García en Curso de Ciencias
+  (4, 4), -- María Fernández en Curso de Lengua Española
+  (5, 5); -- Pedro Sánchez en Curso de Filosofía
+
+-- Insertar categorías de prueba (pertenecen a los cursos)
+INSERT INTO categorias (name, image, description, curso_id)
+VALUES 
+  ('Álgebra', 'https://example.com/images/algebra.jpg', 'Categoría dedicada al estudio del álgebra.', 1),
+  ('Civilizaciones Antiguas', 'https://example.com/images/civilizations.jpg', 'Categoría sobre civilizaciones antiguas de la historia.', 2),
+  ('Biología', 'https://example.com/images/biology.jpg', 'Categoría de biología, abarcando genética, anatomía y más.', 3),
+  ('Gramática Española', 'https://example.com/images/grammar.jpg', 'Categoría que abarca la gramática y sintaxis del español.', 4),
+  ('Ética y Filosofía', 'https://example.com/images/ethics.jpg', 'Categoría que trata sobre ética y filosofías de vida.', 5);
+
+
+-- Insertar temas de prueba
+INSERT INTO temas (indice_tema, name, image, description, pdf_url, category_id, curso_id)
+VALUES 
+  (1, 'Ecuaciones Lineales', 'https://example.com/images/linear_equations.jpg', 'Tema sobre ecuaciones lineales en álgebra.', 'https://example.com/files/linear_equations.pdf', 1, 1),
+  (2, 'Imperios Antiguos', 'https://example.com/images/ancient_empires.jpg', 'Tema sobre los grandes imperios de la antigüedad.', 'https://example.com/files/ancient_empires.pdf', 2, 2),
+  (3, 'Células y Tejidos', 'https://example.com/images/cells_tissues.jpg', 'Tema sobre la estructura de células y tejidos biológicos.', 'https://example.com/files/cells_tissues.pdf', 3, 3),
+  (4, 'Verbos y Adverbios', 'https://example.com/images/verbs_adverbs.jpg', 'Tema sobre los verbos y su uso en español.', 'https://example.com/files/verbs_adverbs.pdf', 4, 4),
+  (5, 'Filosofía Moral', 'https://example.com/images/moral_philosophy.jpg', 'Tema sobre la filosofía moral y ética.', 'https://example.com/files/moral_philosophy.pdf', 5, 5);
+
+-- Insertar videoclases de prueba
+INSERT INTO videoclases (name, image, description, video_url, duration, tema_id)
+VALUES 
+  ('Resolución de Ecuaciones', 'https://example.com/images/equations_video.jpg', 'Videoclase sobre la resolución de ecuaciones lineales.', 'https://example.com/videos/equations.mp4', 60, 1),
+  ('La Historia de Roma', 'https://example.com/images/rome_history_video.jpg', 'Videoclase sobre la historia de Roma y sus emperadores.', 'https://example.com/videos/rome_history.mp4', 45, 2),
+  ('La Célula Animal', 'https://example.com/images/animal_cell_video.jpg', 'Videoclase sobre la estructura de las células animales.', 'https://example.com/videos/animal_cell.mp4', 50, 3),
+  ('El Uso del Subjuntivo', 'https://example.com/images/subjunctive_video.jpg', 'Videoclase sobre el uso del subjuntivo en español.', 'https://example.com/videos/subjunctive.mp4', 40, 4),
+  ('Ética y Decisiones Morales', 'https://example.com/images/ethics_video.jpg', 'Videoclase sobre la ética y las decisiones morales.', 'https://example.com/videos/ethics.mp4', 55, 5);
+
+-- Insertar tests de prueba
+INSERT INTO tests (name, image, description, num_questions, tema_id)
+VALUES 
+  ('Test de Ecuaciones Lineales', 'https://example.com/images/test_linear_equations.jpg', 'Test de matemáticas sobre ecuaciones lineales.', 10, 1),
+  ('Test de Historia de Roma', 'https://example.com/images/test_rome_history.jpg', 'Test sobre la historia de Roma.', 8, 2),
+  ('Test de Biología Celular', 'https://example.com/images/test_cell_biology.jpg', 'Test sobre biología y las células animales.', 12, 3),
+  ('Test de Gramática Española', 'https://example.com/images/test_spanish_grammar.jpg', 'Test de gramática y conjugación de verbos en español.', 15, 4),
+  ('Test de Filosofía Moral', 'https://example.com/images/test_moral_philosophy.jpg', 'Test sobre ética y filosofía moral.', 10, 5);
+
+-- Insertar preguntas de prueba
+INSERT INTO preguntas (question, option1, option2, option3, option4, right_answer, answer_explained, difficulty, test_id)
+VALUES 
+  ('¿Qué es una ecuación lineal?', 'Una expresión algebraica', 'Una ecuación de primer grado', 'Una función cuadrática', 'Una raíz cuadrada', 2, 'Una ecuación lineal es de primer grado.', 'medium', 1),
+  ('¿Quién fue el primer emperador romano?', 'César Augusto', 'Nerón', 'Trajano', 'Marco Aurelio', 1, 'César Augusto fue el primer emperador de Roma.', 'medium', 2),
+  ('¿Qué es una célula?', 'La unidad básica de los organismos', 'Un órgano del cuerpo', 'Una molécula', 'Un tipo de tejido', 1, 'La célula es la unidad básica de los organismos vivos.', 'easy', 3),
+  ('¿Qué es un verbo en español?', 'Una palabra que indica acción', 'Una palabra que describe a un sustantivo', 'Una palabra que conecta oraciones', 'Una palabra que modifica un sustantivo', 1, 'Un verbo indica acción o estado.', 'easy', 4),
+  ('¿Qué es la ética?', 'El estudio de la moral', 'El estudio de la política', 'El estudio de la lógica', 'El estudio de las emociones', 1, 'La ética estudia la moral y los principios de lo correcto y lo incorrecto.', 'hard', 5);
+
+-- Insertar resultados de prueba
+INSERT INTO resultados (aciertos, errores, en_blanco, score, timeTaken, test_id, user_id)
+VALUES 
+  (8, 2, 0, 80, 45, 1, 1),
+  (7, 3, 0, 70, 40, 2, 2),
+  (10, 0, 0, 100, 50, 3, 3),
+  (12, 3, 0, 90, 55, 4, 4),
+  (9, 1, 1, 85, 60, 5, 5);
+
+-- Insertar respuestas de prueba
+INSERT INTO respuestas_usuario (resultado_id, question_id, respuesta_usuario, respuesta_correcta, es_respondida, es_correcta)
+VALUES 
+  (1, 1, 2, 2, TRUE, TRUE),
+  (1, 2, 1, 1, TRUE, TRUE),
+  (1, 3, 1, 1, TRUE, TRUE),
+  (2, 1, 1, 1, TRUE, FALSE),
+  (2, 3, 2, 2, TRUE, TRUE);
