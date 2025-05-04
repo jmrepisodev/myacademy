@@ -38,9 +38,9 @@ const handleValidationErrors = (req, res, next) => {
 };
 
 // Rutas CRUD (/api/temas/)
-router.get('/', auth, temaController.getAllTemas); //index JSON
+router.get('/', temaController.getAllTemas); //index JSON
 
-router.get('/curso/:id', auth,  temaController.getAllTemasByCurso); //preguntas en función de la categoría
+router.get('/curso/:id', temaController.getAllTemasByCurso); //temas en función del curso
 
 router.post('/store', auth, upload.single('pdf'), temaValidation, handleValidationErrors, temaController.storeTema); //store
 

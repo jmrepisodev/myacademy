@@ -1,20 +1,20 @@
-
 const express = require('express');
 const router = express.Router();
-const cursosController = require('../controllers/cursosController');
+const blogController = require('../controllers/blogController');
 const { check, validationResult } = require('express-validator');
 const auth = require('../middleware/authMiddleware');
 
-// Validación de datos de Curso
-const cursoValidation = [
+// Validación de datos de Post
+const PostValidation = [
   check('id').optional().notEmpty().withMessage('El ID es obligatorio').isInt().withMessage('El ID debe ser un número entero'),
-  check('name').notEmpty().withMessage('El nombre es obligatorio').trim(),
-  check('description').optional().escape().trim(),
+  check('titulo').notEmpty().withMessage('El nombre es obligatorio').trim(),
+  check('contenido').notEmpty().withMessage('El contenido es obligatorio').trim(),
   check('image')
     .optional({ checkFalsy: true })  // solo se validará si no está vacío o si no es un valor "falsy" (null, undefined, '', etc.).
-    .isURL().withMessage('URL no válida')
+    //.isURL().withMessage('URL no válida')
     .matches(/\.(jpg|jpeg|png|gif|bmp|webp)$/i).withMessage('La URL debe contener una imagen válida (jpg, jpeg, png, gif, bmp, webp)')
-    .trim()
+    .trim(),
+  check('autor').notEmpty().withMessage('El autor es obligatorio').trim(),
 ];
 
 // Validación de ID (asegura que el ID sea un número entero)
@@ -34,23 +34,18 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-// Rutas CRUD (/api/cursos/)
-//router.get('/dashboard', auth, cursosController.getDashboard);
+// Rutas CRUD (/api/Posts/)
+//router.get('/dashboard', auth, blogController.getDashboard);
 
-router.get('/', cursosController.getAllCursos); //all courses
+router.get('/', blogController.getAllPosts); //all courses
 
-router.post('/matricular', auth, cursosController.matricularAlumno); //matricular alumno en un curso
-router.get('/:id/usuarios', auth, cursosController.getUsuariosPorCurso); //obtener lista de usuarios matriculados en un curso
+router.post('/store', auth, PostValidation, handleValidationErrors, blogController.storePost); //store
 
-router.post('/store', auth, cursoValidation, handleValidationErrors, cursosController.storeCurso); //store
+router.get('/:id', validateID, handleValidationErrors, blogController.getPostById); //show
 
-router.get('/:id', validateID, handleValidationErrors, cursosController.getCursoById); //show
+router.put('/update/:id', auth, PostValidation, handleValidationErrors, blogController.updatePost); //update
 
-router.put('/update/:id', auth, cursoValidation, handleValidationErrors, cursosController.updateCurso); //update
-
-router.delete('/delete/:id', auth, validateID, handleValidationErrors, cursosController.deleteCurso);  //delete
+router.delete('/delete/:id', auth, validateID, handleValidationErrors, blogController.deletePost);  //delete
 
 
 module.exports = router;
-
-

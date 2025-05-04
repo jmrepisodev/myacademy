@@ -1,10 +1,11 @@
 // src/components/Navbar.js
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { FaUserCircle } from 'react-icons/fa';
 
 const Navbar = () => {
+  const location = useLocation(); // Ruta actual
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
@@ -45,18 +46,51 @@ const Navbar = () => {
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto gap-3 align-items-center">
-            <li className="nav-item">
-              <Link className="nav-link text-dark fw-medium" to="/">Inicio</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link text-dark fw-medium" to="/cursos">Cursos</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link text-dark fw-medium" to="/nosotros">Nosotros</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link text-dark fw-medium" to="/contacto">Contacto</Link>
-            </li>
+          <li className="nav-item">
+            <Link
+              className={`nav-link fw-medium ${location.pathname === '/' ? 'text-primary fw-bold active' : 'text-dark'}`}
+              to="/"
+            >
+              Inicio
+            </Link>
+          </li>
+
+          <li className="nav-item">
+            <Link
+              className={`nav-link fw-medium ${location.pathname.startsWith('/cursos') ? 'text-primary fw-bold active' : 'text-dark'}`}
+              to="/cursos"
+            >
+              Cursos
+            </Link>
+          </li>
+
+          <li className="nav-item">
+            <Link
+              className={`nav-link fw-medium ${location.pathname.startsWith('/blog') ? 'text-primary fw-bold active' : 'text-dark'}`}
+              to="/blog"
+            >
+              Noticias
+            </Link>
+          </li>
+
+          <li className="nav-item">
+            <Link
+              className={`nav-link fw-medium ${location.pathname === '/nosotros' ? 'text-primary fw-bold active' : 'text-dark'}`}
+              to="/nosotros"
+            >
+              Nosotros
+            </Link>
+          </li>
+
+          <li className="nav-item">
+            <Link
+              className={`nav-link fw-medium ${location.pathname === '/contacto' ? 'text-primary fw-bold active' : 'text-dark'}`}
+              to="/contacto"
+            >
+              Contacto
+            </Link>
+          </li>
+
 
             {isAuthenticated ? (
               <>

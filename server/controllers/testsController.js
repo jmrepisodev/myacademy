@@ -69,27 +69,7 @@ exports.getAllQuestionsByTest = async (req, res) => {
   }
 };
 
-// Muestra un formulario para crear un nuevo registro
-exports.createTest = async (req, res) => {
-  try {
-       const [categorias] = await db.query('SELECT id, name FROM categorias ORDER BY name ASC'); // Query con promesas
-        if (categorias.length === 0) {
-            return res.status(404).json({ error: 'No existen categorías disponibles' });
-        }
 
-        const [subcategorias] = await db.query('SELECT id, name, description, category_id FROM subcategorias ORDER BY name ASC');
-        if (subcategorias.length === 0) {
-            return res.status(404).json({ error: 'No existen temas disponibles' });
-        }
-
-    // Renderizar la vista con los datos
-    res.render('tests/tests_create', { categorias, subcategorias });
-    
-} catch (err) {
-    console.error('Error interno del servidor:', err.message);
-    return res.status(500).json({ error: 'Error interno del servidor' });
-}
-}
 
 // Crea un nuevo registro
 exports.storeTest = async (req, res) => {
@@ -99,28 +79,6 @@ exports.storeTest = async (req, res) => {
     const [results] = await db.query('INSERT INTO tests SET ?', [data]);
 
     res.status(201).json({ message: 'Test creada satisfactoriamente', id: results.insertId });
-  } catch (error) {
-    // Manejo de errores
-    return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
-  }
-};
-
-// Muestra un formulario para editar un registro
-exports.editTest = async (req, res) => {
-  try {
-    const TestId = req.params.id;
-    const [results] = await db.query('SELECT * FROM tests WHERE id = ?', [TestId]);
-
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'Test no encontrada' });
-    }
-
-    const [categorias] = await db.query('SELECT id, name FROM categorias ORDER BY name ASC'); // Query con promesas
-    if (categorias.length === 0) {
-        return res.status(404).json({ error: 'No existen categorías disponibles' });
-    }
-
-    res.render('tests/tests_edit', { test: results[0], categorias });
   } catch (error) {
     // Manejo de errores
     return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });

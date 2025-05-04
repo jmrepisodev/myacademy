@@ -202,7 +202,8 @@ exports.updateQuestion = async (req, res) => {
         option4, 
         right_answer,  
         answer_explained, 
-        test_id
+        test_id,
+        difficulty
     } = pregunta;
 
     
@@ -222,10 +223,10 @@ exports.updateQuestion = async (req, res) => {
             right_answer: respuesta || null,
             answer_explained: answer_explained || null,
             test_id: test_id || null,
+            difficulty: difficulty|| null
         };
 
         console.log(datosPregunta);
-
 
         // Realizamos la actualización en la base de datos
         const [results] = await db.query('UPDATE preguntas SET ? WHERE id = ?', [datosPregunta, id]);
@@ -240,10 +241,7 @@ exports.updateQuestion = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error interno del servidor' });
-    } finally {
-        // Liberamos la conexión
-        connection.release();
-    }
+    } 
 };
 
 /*
@@ -292,9 +290,6 @@ exports.deleteQuestion = async (req, res) => {
          }
  
          // 3. Actualizar los contadores de preguntas en test
-
- 
-         // Actualizar el test, si la pregunta pertenece a un test
          if (test_id) {
              await db.query('UPDATE tests SET num_questions = num_questions - 1 WHERE id = ?', [test_id]);
          }
@@ -309,9 +304,10 @@ exports.deleteQuestion = async (req, res) => {
         await connection.rollback();
         console.error(error);
         res.status(500).json({ error: 'Error interno del servidor' });
-    } finally {
+    }finally {
+        // Liberamos la conexión
         connection.release();
-    }
+    } 
 
 };
 

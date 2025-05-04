@@ -39,8 +39,8 @@ const handleValidationErrors = (req, res, next) => {
 // Rutas CRUD (/api/tests/)
 router.get('/',  testController.getAllTests); //index JSON
 
-router.get('/resultado/:id',  validateID, handleValidationErrors, testController.getAllResultsByTest);
-router.get('/tema/:id', auth, validateID, handleValidationErrors, testController.getAllTestByTema); //tests en función del tema
+router.get('/resultado/:id', auth, validateID, handleValidationErrors, testController.getAllResultsByTest);
+router.get('/tema/:id',  validateID, handleValidationErrors, testController.getAllTestByTema); //tests en función del tema
 
 router.post('/store', auth, TestValidation, handleValidationErrors, testController.storeTest); //store
 

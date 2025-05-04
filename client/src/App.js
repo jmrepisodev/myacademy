@@ -10,6 +10,9 @@ import RoleProtectedRoute from './components/RoleProtectedRoute';
 
 import Home from './pages/Home';
 import Courses from './pages/Courses';
+import CourseDetail from './pages/CourseDetail';
+import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
@@ -19,6 +22,8 @@ import Temas from './pages/Temas';
 import TestsList from './pages/TestsList';
 import Test from './pages/Test';
 import Videoclase from './pages/Videoclase';
+
+import NotFound from './pages/NotFound';
 
 import UserProfile from './pages/DashboardUser';
 import AdminDashboard from './pages/DashboardAdmin';
@@ -32,6 +37,7 @@ import TemasAdmin from './pages/TemasAdmin';
 import TestsAdmin from './pages/TestAdmin';
 import PreguntasAdmin from './pages/PreguntasAdmin';
 import EstadisticasAdmin from './pages/EstadisticasAdmin';
+import BlogAdmin from './pages/BlogAdmin';
 
 import Navbar from './components/Navbar';
 
@@ -44,15 +50,19 @@ function App() {
       <Routes>
 
          {/* Rutas públicas */}
-         <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home />} />
+
         <Route path="/cursos" element={<Courses />} />
+        <Route path="/curso/:id" element={<CourseDetail />} />
+
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:id" element={<BlogDetail />} />
+
         <Route path="/nosotros" element={<About />} />
         <Route path="/contacto" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Página para acceso denegado */}
-        <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Protegidas por rol: ADMIN */}
         <Route element={<RoleProtectedRoute allowedRoles={['admin']} />}>
@@ -64,20 +74,27 @@ function App() {
           <Route path="/admin/tests" element={<TestsAdmin />} />
           <Route path="/admin/preguntas" element={<PreguntasAdmin />} />
           <Route path="/admin/estadisticas" element={<EstadisticasAdmin />} />
+          <Route path="/admin/noticias" element={<BlogAdmin />} />
         </Route>
         
         {/* Protegidas por rol: USER */}
         <Route element={<RoleProtectedRoute allowedRoles={['user']} />}>
           <Route path="/usuario/perfil" element={<UserProfile />} />
+
+          <Route path="/cursos/:cursoId/temas" element={<Temas />} />
+          {/* Agregar rutas para PDF, Videoclases y Test */}
+          <Route path="/temas/:temaId/tests" element={<TestsList />} />
+          <Route path="/tests/:testId/questions" element={<Test />} />
+          <Route path="/temas/:temaId/videoclase" element={<Videoclase />} />
         </Route>
 
-        <Route path="/cursos/:cursoId/temas" element={<Temas />} />
-        {/* Agregar rutas para PDF, Videoclases y Test */}
-        <Route path="/temas/:temaId/tests" element={<TestsList />} />
-        <Route path="/tests/:testId/questions" element={<Test />} />
-        <Route path="/temas/:temaId/videoclase" element={<Videoclase />} />
-
         <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        {/* Página para acceso denegado */}
+        <Route path="/unauthorized" element={<Unauthorized />} />
+
+         {/* Página para ruta no encontrada - SIEMPRE AL FINAL */}
+         <Route path="*" element={<NotFound />} />
 
       </Routes>
     </Router>

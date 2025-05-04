@@ -26,6 +26,10 @@ CREATE TABLE cursos (
     name VARCHAR(255) NOT NULL,
     image VARCHAR(255),
     description TEXT,
+    requisitos TEXT,
+    precio DECIMAL(10,2),
+    modalidad ENUM('presencial', 'online', 'mixto') DEFAULT 'online',
+    duracion VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -150,38 +154,95 @@ CREATE TABLE respuestas_usuario (
 );
 
 -- Tabla de Foros
-CREATE TABLE Foros (
+CREATE TABLE foros (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    descripcion TEXT
+    name VARCHAR(255) NOT NULL,
+    description TEXT
 );
 
 -- Tabla de Hilos
-CREATE TABLE Hilos (
+CREATE TABLE hilos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
     contenido TEXT,
-    fecha_creacion DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     foro_id INT,
-    FOREIGN KEY (foro_id) REFERENCES Foros(id)
+    FOREIGN KEY (foro_id) REFERENCES foros(id) ON DELETE CASCADE
 );
 
 -- Tabla de Mensajes
-CREATE TABLE Mensajes (
+CREATE TABLE mensajes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     contenido TEXT NOT NULL,
-    fecha_creacion DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuario_id INT,
     hilo_id INT,
-    FOREIGN KEY (usuario_id) REFERENCES Usuarios(id),
-    FOREIGN KEY (hilo_id) REFERENCES Hilos(id)
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (hilo_id) REFERENCES hilos(id) ON DELETE CASCADE
 );
+
+-- Tabla para blog/novedades.
+CREATE TABLE blog (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    contenido TEXT NOT NULL,
+    image VARCHAR(255),
+    autor VARCHAR(100),
+    publicado BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Tabla para almacenar consultas enviadas desde la interfaz de contacto
+CREATE TABLE contacto (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    asunto VARCHAR(255),
+    mensaje TEXT NOT NULL,
+    respondido BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla para testimonios o reseñas
+CREATE TABLE testimonios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT,
+    curso_id INT,
+    contenido TEXT NOT NULL,
+    aprobado BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE CASCADE
+);
+
+-- Tabla para preguntas frecuentes
+CREATE TABLE faqs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pregunta VARCHAR(255) NOT NULL,
+    respuesta TEXT NOT NULL,
+    orden INT DEFAULT 0,
+    publicada BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+--  Tabla para actividad de los usuarios
+CREATE TABLE actividad (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT,
+    tipo ENUM('inscripcion', 'videoclase', 'test', 'comentario', 'otro') NOT NULL,
+    descripcion TEXT NOT NULL,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+
 
 -- Insertar usuarios de prueba
 INSERT INTO usuarios (name, image, email, password, rol, is_verified)
 VALUES 
-  ('Juan Pérez', 'https://example.com/images/juan.jpg', 'juan@example.com', 'password123', 'user', TRUE),
-  ('Ana López', 'https://example.com/images/ana.jpg', 'ana@example.com', 'password456', 'admin', TRUE),
+  ('Juan Pérez', 'https://example.com/images/juan.jpg', 'admin@gmail.com', '$2b$10$FcQmrHZiO8J2Z2lKdSZJVOTO2U/hfjVoBvWC1j2X0WsObrUOnC.lO', 'admin', TRUE),
+  ('Ana López', 'https://example.com/images/ana.jpg', 'ana@example.com', 'password456', 'user', TRUE),
   ('Carlos García', 'https://example.com/images/carlos.jpg', 'carlos@example.com', 'password789', 'teacher', TRUE),
   ('María Fernández', 'https://example.com/images/maria.jpg', 'maria@example.com', 'password101', 'user', FALSE),
   ('Pedro Sánchez', 'https://example.com/images/pedro.jpg', 'pepe@gmail.com', '$2b$10$FcQmrHZiO8J2Z2lKdSZJVOTO2U/hfjVoBvWC1j2X0WsObrUOnC.lO', 'user', TRUE);
@@ -269,3 +330,34 @@ VALUES
   (1, 3, 1, 1, TRUE, TRUE),
   (2, 1, 1, 1, TRUE, FALSE),
   (2, 3, 2, 2, TRUE, TRUE);
+
+-- Insertar noticias o entradas blog
+INSERT INTO blog (titulo, contenido, image, autor) VALUES
+('¡Abrimos nuevas convocatorias!', 'Nos complace anunciar que abrimos nuevas plazas para nuestros cursos de preparación.', 'convocatorias.jpg', 'Pedro Ramirez'),
+('Consejos para estudiar online', 'Aquí tienes los mejores tips para aprovechar tu estudio desde casa.', 'tips_online.jpg', 1),
+('Entrevista con un opositor aprobado', 'Conoce la experiencia de éxito de Ana tras pasar su oposición con nosotros.', 'entrevista_ana.jpg', 'Juan lobo'),
+('Nueva plataforma lanzada', 'Nuestra nueva plataforma mejora tu experiencia de usuario.', 'plataforma_nueva.jpg', 'Raquel peña'),
+('Actualización de temarios 2025', 'Ya disponibles los nuevos temarios adaptados al BOE 2025.', 'temarios2025.jpg', 'Pedro Ramirez');
+
+-- Insertar testimonios
+INSERT INTO testimonios (usuario_id, curso_id, contenido, aprobado) VALUES
+(2, 1, 'Gracias a MyAcademy conseguí mi plaza. El material y los tests fueron clave.', TRUE),
+(3, 2, 'Los profesores son excelentes. Me sentí acompañada todo el tiempo.', TRUE),
+(4, 1, 'Agradezco el seguimiento y la flexibilidad del curso online.', TRUE),
+(5, 3, 'Superé la oposición en menos de un año. Recomendado.', TRUE),
+(1, 2, 'El simulador de exámenes es lo mejor de la plataforma.', TRUE);
+
+-- Insertar preguntas frecuentes
+INSERT INTO faqs (pregunta, respuesta, orden) VALUES
+('¿Cuándo comienzan los cursos?', 'Los cursos tienen convocatorias todos los meses. Puedes inscribirte en cualquier momento.', 1),
+('¿Los cursos son online o presenciales?', 'Nuestros cursos son 100% online, accesibles desde cualquier dispositivo.', 2),
+('¿Qué métodos de pago aceptan?', 'Puedes pagar con tarjeta, PayPal o transferencia bancaria.', 3),
+('¿Hay tutores disponibles?', 'Sí, cada curso cuenta con un tutor especializado que te acompañará.', 4),
+('¿Puedo probar antes de pagar?', 'Sí, ofrecemos clases de prueba y acceso limitado gratuito para nuevos usuarios.', 5);
+
+INSERT INTO actividad (usuario_id, tipo, descripcion) VALUES
+(1, 'inscripcion', 'Juan Pérez se inscribió en el curso "Psicotécnicos"'),
+(2, 'videoclase', 'María Gómez subió una videoclase al curso "Constitución Española"'),
+(3, 'test', 'Carlos García completó el test "Tema 2: Administración Pública"'),
+(4, 'comentario', 'Ana López dejó un comentario en "Videoclase 5"'),
+(2, 'otro', 'Nueva actualización de perfil');

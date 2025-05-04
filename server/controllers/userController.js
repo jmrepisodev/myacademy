@@ -67,6 +67,7 @@ exports.getRankingUsers= async (req, res) => {
 
         res.json(results);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: 'Error interno del servidor'});
     }
 };
@@ -209,6 +210,7 @@ exports.deleteUser = async (req, res) => {
 
         res.json({ message: 'usuario eliminada satisfactoriamente' });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: 'Error interno del servidor'});
     }
 };

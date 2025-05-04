@@ -1,0 +1,16 @@
+NODE_ENV=development
+PORT=5000
+
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_DATABASE=myacademy_db
+
+CLIENT_URL=http://localhost:3000
+API_URL=http://localhost:5000
+
+JWT_SECRET=PQjRxBWLh98hTkzrAvPyV5yAxg6rmTiPKP6gAtQRi66ky9iw9ivrZaDFJJK1hv1g
+
+EMAIL_USER=
+EMAIL_PASS=
+EMAIL_HOST=

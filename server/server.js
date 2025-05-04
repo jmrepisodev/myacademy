@@ -14,6 +14,7 @@ const errorHandler = require('./middleware/errorHandler');
 
 // 🌐 Rutas
 const mainRoutes = require('./routes/mainRoutes');
+const homeRoutes = require('./routes/homeRoutes');
 const authRoutes = require('./routes/authRoutes');
 const usuariosRoutes = require('./routes/usuariosRoutes');
 const cursosRoutes = require('./routes/cursosRoutes');
@@ -21,7 +22,8 @@ const temasRoutes = require('./routes/temasRoutes');
 const testsRoutes = require('./routes/testsRoutes');
 const preguntasRoutes = require('./routes/preguntasRoutes');
 const videoclasesRoutes = require('./routes/videoclasesRoutes');
-const contactoRoute = require('./routes/contactoRoutes');
+const contactoRoutes = require('./routes/contactoRoutes');
+const blogRoutes = require('./routes/blogRoutes');
 
 // 📁 Configuración de variables de entorno
 dotenv.config();
@@ -47,8 +49,8 @@ app.use(cors({
 // Limitador de peticiones (rate limit)
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Máx 100 peticiones por IP
-  message: 'Demasiadas solicitudes, intenta nuevamente más tarde.',
+  max: 500, // Máx 100 peticiones por IP
+  message: 'Demasiadas solicitudes, intentalo de nuevo más tarde.',
 }));
 
 // Middleware de logging solo en desarrollo
@@ -69,6 +71,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ─────────────────────────────
 // 🧭 Rutas del backend (API REST)
 // ─────────────────────────────
+app.use('/api', homeRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/cursos', cursosRoutes);
@@ -76,7 +79,8 @@ app.use('/api/temas', temasRoutes);
 app.use('/api/tests', testsRoutes);
 app.use('/api/preguntas', preguntasRoutes);
 app.use('/api/videoclases', videoclasesRoutes);
-app.use('/api/contacto', contactoRoute);
+app.use('/api/contacto', contactoRoutes);
+app.use('/api/blog', blogRoutes);
 
 // Página principal o rutas públicas
 app.use('/', mainRoutes);

@@ -11,6 +11,8 @@ router.post('/', [
   body('mensaje').trim().notEmpty().withMessage('El mensaje no puede estar vacío.')
 ], contactController.sendContactForm);
 
+//router.post('/contacto', homeController.sendMessage);
+
 module.exports = router;
 
 
