@@ -1,20 +1,24 @@
 # myacademy
 
-# 🛠️ Proyecto Node.js + React
 
-Este proyecto contiene una aplicación dividida en dos partes:
+# 🏫 Descripción del Proyecto.
 
-- **Frontend**: construido con React (`/client`)
-- **Backend**: construido con Node.js y Express (`/server`)
+MyAcademy es una plataforma educativa compuesta por dos aplicaciones independientes:
 
-## 🚀 Requisitos Previos
+🎨 Frontend: Aplicación en React (/client)
+
+🧠 Backend: API RESTful con Node.js, Express y MySQL (/server)
+
+# 🛠️ Requisitos Previos
 
 Antes de comenzar, asegúrate de tener instalado lo siguiente:
 
-- ✅ [Node.js](https://nodejs.org/) (v18 o superior recomendado)
-- ✅ [npm](https://www.npmjs.com/)
-- ✅ [Git](https://git-scm.com/)
-- ✅ Base datos local MySQL (PHPAdmin)
+- ✅ [Node.js] (https://nodejs.org/) (v18 o superior recomendado)
+- ✅ [npm] (https://www.npmjs.com/)
+- ✅ [Git] (https://git-scm.com/)
+- ✅ [MySQL]	(https://dev.mysql.com/downloads/)
+
+También puedes usar phpMyAdmin para administrar la base de datos de manera visual.
 
 Verifica las versiones:
 
@@ -22,6 +26,7 @@ Verifica las versiones:
 node -v
 npm -v
 git --version
+mysql --version
 
 ```
 ## Configuración e instalación
@@ -29,8 +34,9 @@ git --version
 ## Clona el proyecto
 ```
 git clone https://github.com/jmrepisodev/myacademy.git
-cd repositorio
+cd myacademy
 ```
+
 ## Instala las dependencias
 
 Frontend
@@ -52,16 +58,39 @@ Genera los archivos .env y edita los datos necesarios
 cp server/.env.example server/.env
 cp client/.env.example client/.env
 ````
-## Genera la base de datos y los datos de ejemplo
 
-Crea una base de datos SQL con el nombre "myacademy_db". A continuación, genera las tablas y los datos de ejemplo 
-con la ayuda del script adjunto.
+🔧 Ejemplo de .env para el backend:
+````
+PORT=5000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=tu_contraseña
+DB_NAME=myacademy_db
+JWT_SECRET=supersecreto123
+````
+
+🌐 Ejemplo de .env para el frontend:
+````
+REACT_APP_API_URL=http://localhost:5000
+````
+
+## 🧱 Configuración de la Base de Datos
+Abre tu gestor de base de datos (por ejemplo, phpMyAdmin o consola MySQL).
+
+Crea la base de datos:
+````
+CREATE DATABASE myacademy_db;
+Ejecuta el script SQL incluido en el proyecto para generar las tablas y datos de ejemplo:
+````
+
+Ejecuta el script SQL incluido en el proyecto para generar las tablas y datos de ejemplo.
 
 ## Inicia el backend y el frontend
 
 Desde las carpetas de servidor y cliente. Usa el mismo comando para iniciar ambos.
 
 Frontend y Backend
+
 ````
 npm start
 ````

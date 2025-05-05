@@ -140,7 +140,7 @@ function EstadisticasAdmin() {
           labels: stats.map((user) => user.name),
           datasets: [
             {
-              label: 'Puntaje Promedio',
+              label: 'Puntuación Promedio',
               data: stats.map((user) => user.promedio_score),
               backgroundColor: 'rgba(75, 192, 192, 0.2)',
             },
