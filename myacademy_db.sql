@@ -173,12 +173,23 @@ CREATE TABLE hilos (
 -- Tabla de Mensajes
 CREATE TABLE mensajes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    contenido TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    contenido TEXT NOT NULL, 
     usuario_id INT,
     hilo_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     FOREIGN KEY (hilo_id) REFERENCES hilos(id) ON DELETE CASCADE
+);
+
+-- Tabla de mensajes chat
+CREATE TABLE chat_mensajes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tema_id INT NOT NULL,
+  usuario_id INT NOT NULL,
+  texto TEXT NOT NULL,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (tema_id) REFERENCES temas(id) ON DELETE CASCADE,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
 -- Tabla para blog/novedades.
@@ -251,11 +262,11 @@ VALUES
 -- Insertar cursos de prueba
 INSERT INTO cursos (name, image, description)
 VALUES 
-  ('Curso de Matemáticas', 'https://example.com/images/math.jpg', 'Curso completo de matemáticas con ejercicios y teorías.'),
-  ('Curso de Historia', 'https://example.com/images/history.jpg', 'Curso de historia con enfoque en las civilizaciones antiguas.'),
-  ('Curso de Ciencias', 'https://example.com/images/science.jpg', 'Curso de ciencias, cubriendo biología, química y física.'),
-  ('Curso de Lengua Española', 'https://example.com/images/spanish.jpg', 'Curso de lengua española para mejorar gramática y vocabulario.'),
-  ('Curso de Filosofía', 'https://example.com/images/philosophy.jpg', 'Curso introductorio a la filosofía con temas de ética, lógica, y metafísica.');
+  ('Curso de Matemáticas', 'curso.png', 'Curso completo de matemáticas con ejercicios y teorías.'),
+  ('Curso de Historia', 'curso.png', 'Curso de historia con enfoque en las civilizaciones antiguas.'),
+  ('Curso de Ciencias', 'curso.png', 'Curso de ciencias, cubriendo biología, química y física.'),
+  ('Curso de Lengua Española', 'curso.png', 'Curso de lengua española para mejorar gramática y vocabulario.'),
+  ('Curso de Filosofía', 'curso.png', 'Curso introductorio a la filosofía con temas de ética, lógica, y metafísica.');
 
 
 -- Insertar registros de matrícula (usuarios matriculados en cursos)
@@ -280,29 +291,29 @@ VALUES
 -- Insertar temas de prueba
 INSERT INTO temas (indice_tema, name, image, description, pdf_url, category_id, curso_id)
 VALUES 
-  (1, 'Ecuaciones Lineales', 'https://example.com/images/linear_equations.jpg', 'Tema sobre ecuaciones lineales en álgebra.', 'https://example.com/files/linear_equations.pdf', 1, 1),
-  (2, 'Imperios Antiguos', 'https://example.com/images/ancient_empires.jpg', 'Tema sobre los grandes imperios de la antigüedad.', 'https://example.com/files/ancient_empires.pdf', 2, 2),
-  (3, 'Células y Tejidos', 'https://example.com/images/cells_tissues.jpg', 'Tema sobre la estructura de células y tejidos biológicos.', 'https://example.com/files/cells_tissues.pdf', 3, 3),
-  (4, 'Verbos y Adverbios', 'https://example.com/images/verbs_adverbs.jpg', 'Tema sobre los verbos y su uso en español.', 'https://example.com/files/verbs_adverbs.pdf', 4, 4),
-  (5, 'Filosofía Moral', 'https://example.com/images/moral_philosophy.jpg', 'Tema sobre la filosofía moral y ética.', 'https://example.com/files/moral_philosophy.pdf', 5, 5);
+  (1, 'Ecuaciones Lineales', 'tema.jpg', 'Tema sobre ecuaciones lineales en álgebra.', 'tema.pdf', 1, 1),
+  (2, 'Imperios Antiguos', 'tema.jpg', 'Tema sobre los grandes imperios de la antigüedad.', 'tema.pdf', 2, 2),
+  (3, 'Células y Tejidos', 'tema.jpg', 'Tema sobre la estructura de células y tejidos biológicos.', 'tema.pdf', 3, 3),
+  (4, 'Verbos y Adverbios', 'tema.jpg', 'Tema sobre los verbos y su uso en español.', 'tema.pdf', 4, 4),
+  (5, 'Filosofía Moral', 'tema.jpg', 'Tema sobre la filosofía moral y ética.', 'tema.pdf', 5, 5);
 
 -- Insertar videoclases de prueba
 INSERT INTO videoclases (name, image, description, video_url, duration, tema_id)
 VALUES 
-  ('Resolución de Ecuaciones', 'https://example.com/images/equations_video.jpg', 'Videoclase sobre la resolución de ecuaciones lineales.', 'https://example.com/videos/equations.mp4', 60, 1),
-  ('La Historia de Roma', 'https://example.com/images/rome_history_video.jpg', 'Videoclase sobre la historia de Roma y sus emperadores.', 'https://example.com/videos/rome_history.mp4', 45, 2),
-  ('La Célula Animal', 'https://example.com/images/animal_cell_video.jpg', 'Videoclase sobre la estructura de las células animales.', 'https://example.com/videos/animal_cell.mp4', 50, 3),
-  ('El Uso del Subjuntivo', 'https://example.com/images/subjunctive_video.jpg', 'Videoclase sobre el uso del subjuntivo en español.', 'https://example.com/videos/subjunctive.mp4', 40, 4),
-  ('Ética y Decisiones Morales', 'https://example.com/images/ethics_video.jpg', 'Videoclase sobre la ética y las decisiones morales.', 'https://example.com/videos/ethics.mp4', 55, 5);
+  ('Resolución de Ecuaciones', 'video.jpg', 'Videoclase sobre la resolución de ecuaciones lineales.', 'video.mp4', 60, 1),
+  ('La Historia de Roma', 'video.jpg', 'Videoclase sobre la historia de Roma y sus emperadores.', 'video.mp4', 45, 2),
+  ('La Célula Animal', 'video.jpg', 'Videoclase sobre la estructura de las células animales.', 'video.mp4', 50, 3),
+  ('El Uso del Subjuntivo', 'video.jpg', 'Videoclase sobre el uso del subjuntivo en español.', 'video.mp4', 40, 4),
+  ('Ética y Decisiones Morales', 'video.jpg', 'Videoclase sobre la ética y las decisiones morales.', 'video.mp4', 55, 5);
 
 -- Insertar tests de prueba
 INSERT INTO tests (name, image, description, num_questions, tema_id)
 VALUES 
-  ('Test de Ecuaciones Lineales', 'https://example.com/images/test_linear_equations.jpg', 'Test de matemáticas sobre ecuaciones lineales.', 10, 1),
-  ('Test de Historia de Roma', 'https://example.com/images/test_rome_history.jpg', 'Test sobre la historia de Roma.', 8, 2),
-  ('Test de Biología Celular', 'https://example.com/images/test_cell_biology.jpg', 'Test sobre biología y las células animales.', 12, 3),
-  ('Test de Gramática Española', 'https://example.com/images/test_spanish_grammar.jpg', 'Test de gramática y conjugación de verbos en español.', 15, 4),
-  ('Test de Filosofía Moral', 'https://example.com/images/test_moral_philosophy.jpg', 'Test sobre ética y filosofía moral.', 10, 5);
+  ('Test de Ecuaciones Lineales', 'test.jpg', 'Test de matemáticas sobre ecuaciones lineales.', 10, 1),
+  ('Test de Historia de Roma', 'test.jpg', 'Test sobre la historia de Roma.', 8, 2),
+  ('Test de Biología Celular', 'test.jpg', 'Test sobre biología y las células animales.', 12, 3),
+  ('Test de Gramática Española', 'test.jpg', 'Test de gramática y conjugación de verbos en español.', 15, 4),
+  ('Test de Filosofía Moral', 'test.jpg', 'Test sobre ética y filosofía moral.', 10, 5);
 
 -- Insertar preguntas de prueba
 INSERT INTO preguntas (question, option1, option2, option3, option4, right_answer, answer_explained, difficulty, test_id)
@@ -333,11 +344,11 @@ VALUES
 
 -- Insertar noticias o entradas blog
 INSERT INTO blog (titulo, contenido, image, autor) VALUES
-('¡Abrimos nuevas convocatorias!', 'Nos complace anunciar que abrimos nuevas plazas para nuestros cursos de preparación.', 'convocatorias.jpg', 'Pedro Ramirez'),
-('Consejos para estudiar online', 'Aquí tienes los mejores tips para aprovechar tu estudio desde casa.', 'tips_online.jpg', 1),
-('Entrevista con un opositor aprobado', 'Conoce la experiencia de éxito de Ana tras pasar su oposición con nosotros.', 'entrevista_ana.jpg', 'Juan lobo'),
-('Nueva plataforma lanzada', 'Nuestra nueva plataforma mejora tu experiencia de usuario.', 'plataforma_nueva.jpg', 'Raquel peña'),
-('Actualización de temarios 2025', 'Ya disponibles los nuevos temarios adaptados al BOE 2025.', 'temarios2025.jpg', 'Pedro Ramirez');
+('¡Abrimos nuevas convocatorias!', 'Nos complace anunciar que abrimos nuevas plazas para nuestros cursos de preparación.', 'post.jpg', 'Pedro Ramirez'),
+('Consejos para estudiar online', 'Aquí tienes los mejores tips para aprovechar tu estudio desde casa.', 'post.jpg', 1),
+('Entrevista con un opositor aprobado', 'Conoce la experiencia de éxito de Ana tras pasar su oposición con nosotros.', 'post.jpg', 'Juan lobo'),
+('Nueva plataforma lanzada', 'Nuestra nueva plataforma mejora tu experiencia de usuario.', 'post.jpg', 'Raquel peña'),
+('Actualización de temarios 2025', 'Ya disponibles los nuevos temarios adaptados al BOE 2025.', 'post.jpg', 'Pedro Ramirez');
 
 -- Insertar testimonios
 INSERT INTO testimonios (usuario_id, curso_id, contenido, aprobado) VALUES

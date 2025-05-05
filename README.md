@@ -14,6 +14,7 @@ Antes de comenzar, asegúrate de tener instalado lo siguiente:
 - ✅ [Node.js](https://nodejs.org/) (v18 o superior recomendado)
 - ✅ [npm](https://www.npmjs.com/)
 - ✅ [Git](https://git-scm.com/)
+- ✅ Base datos local MySQL (PHPAdmin)
 
 Verifica las versiones:
 
@@ -31,11 +32,14 @@ git clone https://github.com/jmrepisodev/myacademy.git
 cd repositorio
 ```
 ## Instala las dependencias
+
+Frontend
 ````
 cd server
 npm install
 ````
 
+Backend
 ````
 cd client
 npm install
@@ -48,11 +52,16 @@ Genera los archivos .env y edita los datos necesarios
 cp server/.env.example server/.env
 cp client/.env.example client/.env
 ````
+## Genera la base de datos y los datos de ejemplo
+
+Crea una base de datos SQL con el nombre "myacademy_db". A continuación, genera las tablas y los datos de ejemplo 
+con la ayuda del script adjunto.
 
 ## Inicia el backend y el frontend
 
-Desde las carpetas de servidor y cliente. Usa el mismo comando para iniciar.
+Desde las carpetas de servidor y cliente. Usa el mismo comando para iniciar ambos.
 
+Frontend y Backend
 ````
 npm start
 ````

@@ -212,9 +212,16 @@ function TestsAdmin() {
                                 <td>{test.id}</td>
                                 <td>{test.name}</td>
                                 <td>{test.description}</td>
-                                <td>
-                                {test.image && <img src={`${apiUrl}/uploads/${test.image}`} alt={test.name} width="50" />}
-                                </td>
+                                <td>{test.image && <img 
+                                        src={`${apiUrl}/uploads/${test.image}`} 
+                                        className='img-thumbnail mx-auto d-block'
+                                        alt={test.name} 
+                                        width="50px"
+                                        onError={(e) => {
+                                        e.target.onerror = null; // evita bucle si la imagen por defecto también falla
+                                        e.target.src = "/image_not_found.png"; // ruta de imagen por defecto (public/)
+                                        }}
+                                    />}</td>
                                 <td>{test.num_questions}</td>
                                 <td>{test.tema_id}</td>
                                 <td>

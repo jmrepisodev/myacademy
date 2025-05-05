@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://myacademy.alwaysdata.net/api',
+  baseURL: 'http://localhost:5000/api',
 });
 
 // Incluir token automáticamente en cada petición

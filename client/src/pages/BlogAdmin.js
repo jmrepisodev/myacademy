@@ -3,6 +3,8 @@ import { Table, Button, Modal, Form, InputGroup, FormControl } from 'react-boots
 import API from '../services/api';
 import Sidebar from '../components/SidebarAdmin';
 
+const apiUrl = process.env.REACT_APP_API_URL;
+
 function NoticiasAdmin() {
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
@@ -116,6 +118,7 @@ function NoticiasAdmin() {
               <th>Título</th>
               <th>Autor</th>
               <th>Contenido</th>
+              <th>Imagen</th>
               <th>Publicado</th>
               <th>Fecha</th>
               <th>Acciones</th>
@@ -128,6 +131,16 @@ function NoticiasAdmin() {
                 <td>{post.titulo}</td>
                 <td>{post.autor ? post.autor : 'Anónimo'}</td>
                 <td>{post.contenido}</td>
+                <td>{post.image && <img 
+                      src={`${apiUrl}/uploads/${post.image}`} 
+                      className='img-thumbnail mx-auto d-block'
+                      alt={post.name} 
+                      width="50px"
+                      onError={(e) => {
+                      e.target.onerror = null; // evita bucle si la imagen por defecto también falla
+                      e.target.src = "/image_not_found.png"; // ruta de imagen por defecto (public/)
+                      }}
+                  />}</td>
                 <td>{post.publicado ? 'Sí' : 'No'}</td>
                 <td>{new Date(post.created_at).toLocaleDateString()}</td>
                 <td>

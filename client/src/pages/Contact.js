@@ -37,48 +37,53 @@ const Contact = () => {
 
   return (
     <section className="container p-5">
-      <h1 className="mb-4 fs-2 text-center">Contáctanos</h1>
-      <form className="row g-4" onSubmit={handleSubmit}>
-        <div className="col-md-6">
-          <input
-            type="text"
-            name="name"
-            className="form-control p-3"
-            placeholder="Tu nombre completo"
-            value={form.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="col-md-6">
-          <input
-            type="email"
-            name="email"
-            className="form-control p-3"
-            placeholder="Tu correo electrónico"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="col-12">
-          <textarea
-            name="message"
-            className="form-control p-3"
-            placeholder="Escribe tu mensaje..."
-            rows="5"
-            value={form.message}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="col-12 text-center">
-          <button type="submit" className="btn btn-primary btn-lg" disabled={enviando}>
-            {enviando ? 'Enviando...' : 'Enviar Mensaje'}
-          </button>
-          {enviado && <div className="mt-3 alert alert-info">{enviado}</div>}
-        </div>
-      </form>
+      <div className="card shadow-sm">
+            <div className="card-body">
+              <h2 className="card-title text-center mb-4">Contacta con nosotros</h2>
+              <form className="row g-4" onSubmit={handleSubmit}>
+                <div className="col-md-6">
+                  <input
+                    type="text"
+                    name="name"
+                    className="form-control p-3"
+                    placeholder="Tu nombre completo"
+                    value={form.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <input
+                    type="email"
+                    name="email"
+                    className="form-control p-3"
+                    placeholder="Tu correo electrónico"
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="col-12">
+                  <textarea
+                    name="message"
+                    className="form-control p-3"
+                    placeholder="Escribe tu mensaje..."
+                    rows="5"
+                    value={form.message}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="col-12 text-center">
+                  <button type="submit" className="btn btn-primary btn-lg" disabled={enviando}>
+                    {enviando ? 'Enviando...' : 'Enviar Mensaje'}
+                  </button>
+                  {enviado && <div className="mt-3 alert alert-info">{enviado}</div>}
+                </div>
+              </form>
+            </div>
+      </div>
+      
     </section>
   );
 };

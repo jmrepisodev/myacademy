@@ -2,17 +2,23 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { jwtDecode } from 'jwt-decode';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
   const [values, setValues] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState([]);
   const [success, setSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // 👈 NUEVO ESTADO
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
     setErrors([]);
     setSuccess('');
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
   };
 
   const handleSubmit = async (e) => {
@@ -65,7 +71,7 @@ const Login = () => {
         <div className="col-md-6">
           <div className="card shadow-sm">
             <div className="card-body">
-              <h3 className="card-title text-center mb-4">Iniciar Sesión</h3>
+              <h2 className="card-title text-center mb-4">Iniciar Sesión</h2>
 
               {success && <div className="alert alert-success">{success}</div>}
               {errors.length > 0 && (
@@ -94,15 +100,25 @@ const Login = () => {
 
                 <div className="mb-4">
                   <label htmlFor="password" className="form-label">Contraseña</label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="password"
-                    name="password"
-                    value={values.password}
-                    onChange={handleChange}
-                    required
-                  />
+                  <div className="input-group">
+                    <input
+                      type={showPassword ? 'text' : 'password'} // 👈 CAMBIO AQUÍ
+                      className="form-control"
+                      id="password"
+                      name="password"
+                      value={values.password}
+                      onChange={handleChange}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={togglePasswordVisibility}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                 </div>
 
                 <button type="submit" className="btn btn-primary w-100">Iniciar sesión</button>

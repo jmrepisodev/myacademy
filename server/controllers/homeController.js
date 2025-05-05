@@ -1,4 +1,4 @@
-const authMiddleware = require('../middleware/authMiddleware');
+
 const db = require('../config/database');
 
 // Muestra todas las preguntas frecuentes publicadas

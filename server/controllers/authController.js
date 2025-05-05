@@ -81,7 +81,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'Email no verificado' });
     }
 */
-    const token = jwt.sign({ id: user.id, email: user.email, rol: user.rol }, process.env.JWT_SECRET, {expiresIn: '2h'});
+    const token = jwt.sign({ id: user.id, email: user.email, nombre: user.name, rol: user.rol }, process.env.JWT_SECRET, {expiresIn: '2h'});
     
      // Enviar ambos tokens en la respuesta para aplicaciones móviles
      res.status(201).json({ message: 'Se ha iniciado sesión satisfactoriamente', token:token });

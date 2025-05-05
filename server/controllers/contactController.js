@@ -1,6 +1,7 @@
 // controllers/contactController.js
 const emailService = require('../utils/emailService');
 
+//Envia el formulario de contacto al email de la academia.
 exports.sendContactForm = async (req, res) => {
   const { name, email, message } = req.body;
 

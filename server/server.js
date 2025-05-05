@@ -4,6 +4,8 @@
 // 📦 Importaciones
 // ─────────────────────────────
 const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 const path = require('path');
 const dotenv = require('dotenv');
 const helmet = require('helmet');
@@ -11,6 +13,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const errorHandler = require('./middleware/errorHandler');
+const db = require('./config/database'); 
 
 // 🌐 Rutas
 const mainRoutes = require('./routes/mainRoutes');
@@ -24,12 +27,23 @@ const preguntasRoutes = require('./routes/preguntasRoutes');
 const videoclasesRoutes = require('./routes/videoclasesRoutes');
 const contactoRoutes = require('./routes/contactoRoutes');
 const blogRoutes = require('./routes/blogRoutes');
+const chatRoutes = require('./routes/messageRoutes');
 
 // 📁 Configuración de variables de entorno
 dotenv.config();
 
 // 🚀 Inicialización de la app
-const app = express();
+const app = express(); //Crea el servidro Express
+
+//Crea el servidor WebSocket (socket.io) para el sistema de CHAT
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
 
 // ─────────────────────────────
 // 🛡️ Seguridad y configuración global
@@ -81,6 +95,7 @@ app.use('/api/preguntas', preguntasRoutes);
 app.use('/api/videoclases', videoclasesRoutes);
 app.use('/api/contacto', contactoRoutes);
 app.use('/api/blog', blogRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Página principal o rutas públicas
 app.use('/', mainRoutes);
@@ -95,11 +110,54 @@ app.use((req, res, next) => {
 // 🧯 Middleware de manejo de errores
 app.use(errorHandler);
 
+
+//Configuar el servidor WebSocket (socket.io) para el sistema de CHAT
+
+io.on('connection', (socket) => {
+  console.log('Nuevo cliente conectado');
+
+  socket.on('joinRoom', (room) => {
+    socket.join(room);
+  });
+
+  socket.on('leaveRoom', (room) => {
+    socket.leave(room);
+  });
+
+  socket.on('chatMessage', async (msg) => {
+
+    io.to(msg.temaId).emit('chatMessage', msg);
+
+    //Almacena los mensajes del chat en la base de datos (opcional)
+    try {
+      await db.query(
+        'INSERT INTO chat_mensajes (tema_id, usuario_id, texto) VALUES (?, ?, ?)',
+        [msg.temaId, msg.userId, msg.texto]
+      );
+    } catch (error) {
+      console.error('Error al guardar mensaje en la base de datos:', error);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado');
+  });
+});
+
+
+
 // ─────────────────────────────
 // 🚀 Puesta en marcha
 // ─────────────────────────────
 const PORT = process.env.PORT || 5000;
+/*
+//Inicia el servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
+*/
 
+// Inicia el servidor HTTP con Socket.IO
+server.listen(PORT, () => {
+  console.log(`🚀 Servidor con Socket.IO corriendo en http://localhost:${PORT}`);
+});

@@ -31,7 +31,7 @@ const Dashboard = () => {
           videoclases: totalVideoclases,
         });
   
-        setActividad(actividadRes.data || []);
+       // setActividad(actividadRes.data || []);
       } catch (error) {
         console.error('Error al cargar datos del dashboard:', error);
       }
@@ -83,7 +83,7 @@ const Dashboard = () => {
                   Actividad reciente
                 </div>
                 <ul className="list-group list-group-flush">
-                  {actividad.length > 0 ? (
+                  {actividad && actividad.length > 0 ? (
                     actividad.map((item, index) => (
                       <li key={index} className="list-group-item">
                         📌 {item.descripcion}

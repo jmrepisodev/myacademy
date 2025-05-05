@@ -181,6 +181,7 @@ exports.matricularAlumno = async (req, res) => {
     }
 };
 
+//Mostrar usuarios por curso
 exports.getUsuariosPorCurso = async (req, res) => {
   const cursoId = req.params.id;
 

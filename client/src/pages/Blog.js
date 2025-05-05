@@ -36,7 +36,7 @@ const Blog = () => {
           <div className="col-md-6 col-lg-4" key={post.id}>
             <div className="card h-100 shadow-sm">
               <img
-                src={`${apiUrl}/uploads/${post.image || 'default_blog.jpg'}`}
+                src={`${apiUrl}/uploads/${post.image}`}
                 className="card-img-top"
                 alt={post.titulo}
                 onError={(e) => {

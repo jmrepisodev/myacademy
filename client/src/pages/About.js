@@ -19,7 +19,7 @@ const About = () => {
         </div>
         <div className="col-md-6">
           <img 
-            src={`${apiUrl}/uploads/myacademy.png`}
+            src={`${apiUrl}/uploads/graduation.png`}
             alt="Nuestra academia"
             className="img-fluid rounded shadow"
             onError={(e) => {

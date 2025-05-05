@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Carousel from '../components/Carousel'
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -58,13 +59,7 @@ const Home = () => {
 */
   return (
     <div className="container-fluid p-0 d-flex flex-column min-vh-100 flex-grow-1">
-      <header className="bg-primary text-white text-center py-5">
-        <div className="container">
-          <h1 className="display-4 fw-bold mt-3">Academia MyAcademy</h1>
-          <p className="lead mt-2">Tu futuro empieza aquí. Prepárate con los mejores.</p>
-          <a href="#cursos" className="btn btn-light text-primary fw-bold mt-3">Ver Cursos</a>
-        </div>
-      </header>
+      <Carousel />
 
         {/* CURSOS */}
       <section id="cursos" className="py-5 bg-white text-center">
@@ -108,12 +103,15 @@ const Home = () => {
               blogPosts.map((post, index) => (
                 <div key={index} className="col-md-4">
                   <div className="card h-100 shadow-sm">
-                    {post.imagen && (
+                    {post.image && (
                       <img 
-                        src={`${apiUrl}/uploads/${post.imagen}`} 
+                        src={`${apiUrl}/uploads/${post.image}`} 
                         className="card-img-top" 
                         alt={post.titulo} 
-                        onError={(e) => e.target.src = "/image_not_found.png"} 
+                        onError={(e) => {
+                          e.target.onerror = null; // evita bucle si la imagen por defecto también falla
+                          e.target.src = "/image_not_found.png"; // ruta de imagen por defecto (public/)
+                        }}
                       />
                     )}
                     <div className="card-body">

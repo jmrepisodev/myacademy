@@ -77,7 +77,7 @@ exports.storeVideoclase = async (req, res) => {
       const videoFile = req.file;
       if (!videoFile) return res.status(400).json({ error: 'No se ha subido ningún archivo de video' });
 
-      const video_url = `/uploads/videos/${videoFile.filename}`;  // URL relativa
+      const video_url = videoFile.filename;
 
       const [result] = await db.query('INSERT INTO videoclases SET ?', {
           name,
@@ -144,7 +144,7 @@ exports.updateVideoclase = async (req, res) => {
 
     // Si se subió un nuevo archivo de video
     if (req.file) {
-      const video_url = `/uploads/videos/${req.file.filename}`;
+      const video_url = req.file.filename;
       updateFields.video_url = video_url;
     }
 

@@ -70,7 +70,7 @@ function PerfilUsuario() {
     <div className="container-fluid p-0 min-vh-100 d-flex">
         {/* Sidebar izquierda */}
         <div className="col-md-2 col-lg-2 p-0 bg-dark">
-          <Sidebar/>
+          <Sidebar usuario={usuario} />
         </div>
         {/* Contenido principal derecha */}
         <div className="col p-3">

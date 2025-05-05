@@ -45,7 +45,7 @@ const Register = () => {
         <div className="col-md-6">
           <div className="card shadow-sm">
             <div className="card-body">
-              <h3 className="card-title text-center mb-4">Registrar Alumno</h3>
+              <h2 className="card-title text-center mb-4">Registrar Alumno</h2>
 
               {success && <div className="alert alert-success">{success}</div>}
               {errors.length > 0 && (

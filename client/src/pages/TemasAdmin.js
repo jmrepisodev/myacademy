@@ -172,7 +172,16 @@ useEffect(() => {
                                     <td>{tema.id}</td>
                                     <td>{tema.indice_tema}</td>
                                     <td>{tema.name}</td>
-                                    <td>{tema.image && <img src={`${apiUrl}/uploads/${tema.image}`} alt={tema.name} width="50" />}</td>
+                                    <td>{tema.image && <img 
+                                        src={`${apiUrl}/uploads/${tema.image}`} 
+                                        className='img-thumbnail mx-auto d-block'
+                                        alt={tema.name} 
+                                        width="50px"
+                                        onError={(e) => {
+                                        e.target.onerror = null; // evita bucle si la imagen por defecto también falla
+                                        e.target.src = "/image_not_found.png"; // ruta de imagen por defecto (public/)
+                                        }}
+                                    />}</td>
                                     <td>{tema.description}</td>
                                     <td><a href={`${apiUrl}/uploads/${tema.pdf_url}`} target="_blank" rel="noopener noreferrer">Ver PDF</a></td>
                                     <td>{tema.curso_id}</td>
