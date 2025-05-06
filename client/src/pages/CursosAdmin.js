@@ -11,7 +11,13 @@ function Cursos() {
     const [showModal, setShowModal] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentCurso, setCurrentCurso] = useState({ name: '', description: '', image: '' });
+    const [currentCurso, setCurrentCurso] = useState({
+        name: '',
+        description: '',
+        image: '',
+        estado: 'activo', 
+        profesor_id: ''
+    });
     const [deleteCursoId, setDeleteCursoId] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
    

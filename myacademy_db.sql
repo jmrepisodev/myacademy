@@ -15,6 +15,7 @@ CREATE TABLE usuarios (
     verification_token VARCHAR(255),
     reset_token VARCHAR(255),
     token_expiration DATETIME,
+    status ENUM('activo', 'inactivo') DEFAULT 'activo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -29,9 +30,12 @@ CREATE TABLE cursos (
     requisitos TEXT,
     precio DECIMAL(10,2),
     modalidad ENUM('presencial', 'online', 'mixto') DEFAULT 'online',
+    status ENUM('activo', 'inactivo') DEFAULT 'activo',
     duracion VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    profesor_id INT,  -- ID del profesor
+    FOREIGN KEY (profesor_id) REFERENCES usuarios(id) ON DELETE SET NULL; 
 );
 
 
@@ -53,6 +57,7 @@ CREATE TABLE categorias (
     image VARCHAR(255),
     description TEXT,
     curso_id INT NOT NULL,
+    status ENUM('activo', 'inactivo') DEFAULT 'activo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE CASCADE
@@ -69,6 +74,7 @@ CREATE TABLE temas (
     pdf_url VARCHAR(255),
     category_id INT,
     curso_id INT NOT NULL,
+    status ENUM('activo', 'inactivo') DEFAULT 'activo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categorias(id) ON DELETE CASCADE,
@@ -85,6 +91,7 @@ CREATE TABLE videoclases (
     video_url VARCHAR(255),
     duration INT,
     tema_id INT NOT NULL,
+    status ENUM('activo', 'inactivo') DEFAULT 'activo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (tema_id) REFERENCES temas(id) ON DELETE CASCADE
@@ -99,6 +106,7 @@ CREATE TABLE tests (
     description TEXT,
     num_questions INT DEFAULT 0,
     tema_id INT NOT NULL,
+    status ENUM('activo', 'inactivo') DEFAULT 'activo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (tema_id) REFERENCES temas(id) ON DELETE CASCADE
@@ -117,6 +125,7 @@ CREATE TABLE preguntas (
     answer_explained TEXT,
     difficulty ENUM('easy', 'medium', 'hard') DEFAULT 'medium',
     test_id INT NOT NULL,
+    status ENUM('activo', 'inactivo') DEFAULT 'activo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
@@ -165,9 +174,11 @@ CREATE TABLE hilos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
     contenido TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     foro_id INT,
-    FOREIGN KEY (foro_id) REFERENCES foros(id) ON DELETE CASCADE
+    usuario_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (foro_id) REFERENCES foros(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
 -- Tabla de Mensajes
@@ -247,6 +258,52 @@ CREATE TABLE actividad (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
+------------------------------------------------------------------
+
+-- Tabla para seguimiento de progreso por tema o videoclase
+CREATE TABLE progreso_usuario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    tema_id INT,
+    videoclase_id INT,
+    completado BOOLEAN DEFAULT FALSE,
+    tiempo_dedicado INT DEFAULT 0, -- en minutos
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (tema_id) REFERENCES temas(id),
+    FOREIGN KEY (videoclase_id) REFERENCES videoclases(id)
+);
+
+-- Tabla para valoraciones y comentarios (feedback)
+CREATE TABLE valoraciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    tipo ENUM('curso', 'tema', 'videoclase', 'test'),
+    referencia_id INT NOT NULL,
+    puntuacion INT CHECK(puntuacion BETWEEN 1 AND 5),
+    comentario TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- Tabla para notificaciones
+CREATE TABLE notificaciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    mensaje TEXT NOT NULL,
+    leido BOOLEAN DEFAULT FALSE,
+    tipo ENUM('sistema', 'curso', 'foro', 'otro'),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+
+-- Indices para datos que se buscan frecuentemente
+CREATE INDEX idx_usuario_email ON usuarios(email);
+CREATE INDEX idx_test_tema_id ON tests(tema_id);
+CREATE INDEX idx_pregunta_test_id ON preguntas(test_id);
+CREATE INDEX idx_videoclase_tema_id ON videoclases(tema_id);
+CREATE INDEX idx_resultado_user_test ON resultados(user_id, test_id);
 
 
 -- Insertar usuarios de prueba
@@ -372,3 +429,11 @@ INSERT INTO actividad (usuario_id, tipo, descripcion) VALUES
 (3, 'test', 'Carlos García completó el test "Tema 2: Administración Pública"'),
 (4, 'comentario', 'Ana López dejó un comentario en "Videoclase 5"'),
 (2, 'otro', 'Nueva actualización de perfil');
+
+
+
+
+/* OTRAS MEJORAS: 
+
+    -añadir campos como created_by INT, updated_by INT a todas las tablas, 
+    para auditoria y trazabilidad (ID del usuario que ha creado o modificado una tabla) */

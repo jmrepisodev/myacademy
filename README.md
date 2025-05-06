@@ -61,11 +61,17 @@ cp client/.env.example client/.env
 
 🔧 Ejemplo de .env para el backend:
 ````
+NODE_ENV=development
 PORT=5000
+
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=tu_contraseña
-DB_NAME=myacademy_db
+DB_PASSWORD=
+DB_DATABASE=myacademy_db
+
+CLIENT_URL=http://localhost:3000
+API_URL=http://localhost:5000
+
 JWT_SECRET=supersecreto123
 ````
 
@@ -100,3 +106,5 @@ A continuación puedes acceder al servidor y el frontend, de forma local, en las
 - Servidor: http://localhost:5000
 
 - Cliente:  http://localhost:3000
+
+---------------
