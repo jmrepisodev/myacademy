@@ -80,13 +80,16 @@ JWT_SECRET=supersecreto123
 REACT_APP_API_URL=http://localhost:5000
 ````
 
+## Configura la URL base del servidor en el cliente 
+
+Modifica el archivo api.js de la carpeta services. Agrega la URL de tu servidor, por defecto http://localhost:5000
+
 ## 🧱 Configuración de la Base de Datos
 Abre tu gestor de base de datos (por ejemplo, phpMyAdmin o consola MySQL).
 
 Crea la base de datos:
 ````
 CREATE DATABASE myacademy_db;
-Ejecuta el script SQL incluido en el proyecto para generar las tablas y datos de ejemplo:
 ````
 
 Ejecuta el script SQL incluido en el proyecto para generar las tablas y datos de ejemplo.
