@@ -8,58 +8,48 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const Home = () => {
   const [cursos, setCursos] = useState([]);
   const [testimonios, setTestimonios] = useState([]);
-  const [blogPosts, setBlogPosts] = useState([]);
   const [faqs, setFaqs] = useState([]);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    Promise.all([
-      fetch(`${apiUrl}/api/cursos`).then(res => res.json()),
-      fetch(`${apiUrl}/api/testimonios`).then(res => res.json()),
-      fetch(`${apiUrl}/api/blog`).then(res => res.json()),
-      fetch(`${apiUrl}/api/faq`).then(res => res.json())
-    ])
-      .then(([cursosData, testimoniosData, blogData, faqsData]) => {
-        setCursos(cursosData);
-        setTestimonios(testimoniosData);
-        setBlogPosts(blogData);
-        setFaqs(faqsData);
-      })
-      .catch(error => console.error('Error al cargar datos de inicio:', error));
+   useEffect(() => {
+      Promise.all([
+        fetch(`${apiUrl}/api/cursos`).then(res => res.json()),
+        fetch(`${apiUrl}/api/testimonios`).then(res => res.json()),
+        fetch(`${apiUrl}/api/faq`).then(res => res.json())
+        ])
+        .then(([cursosData, testimoniosData, faqsData]) => {
+          setCursos(cursosData.cursos || []);
+          setTestimonios(testimoniosData || []);
+
+          setFaqs(faqsData || []);
+          setError(null);
+        })
+        .catch(error => {
+          console.error('Error al cargar datos de inicio:', error);
+          setError('Error al cargar la página de inicio');
+        });
   }, []);
 
- /*
-  useEffect(() => {
-    fetch(`${apiUrl}/api/cursos`)
-      .then(res => res.json())
-      .then(data => setCursos(data))
-      .catch(error => console.error('Error al cargar cursos:', error));
-  }, []);
 
-  useEffect(() => {
-    fetch(`${apiUrl}/api/testimonios`)
-      .then(res => res.json())
-      .then(data => setTestimonios(data))
-      .catch(error => console.error('Error al cargar testimonios:', error));
-  }, []);
-
-  useEffect(() => {
-    fetch(`${apiUrl}/api/blog`)
-      .then(res => res.json())
-      .then(data => setBlogPosts(data))
-      .catch(error => console.error('Error al cargar blog:', error));
-  }, []);
-
-  useEffect(() => {
-    fetch(`${apiUrl}/api/faq`)
-      .then(res => res.json())
-      .then(data => setFaqs(data))
-      .catch(error => console.error('Error al cargar FAQs:', error));
-  }, []);
-  
-*/
+  if (error) return <div className="alert alert-danger">{error}</div>;
+ 
   return (
     <div className="container-fluid p-0 d-flex flex-column min-vh-100 flex-grow-1">
+
+      {/* Carrusel con imágenes o videos */}
       <Carousel />
+
+      {/* Sección Hero con propuesta de valor y CTA */}
+      <section className="bg-primary text-white text-center py-5">
+        <div className="container">
+          <h1 className="display-4">Impulsa tu futuro profesional</h1>
+          <p className="lead mt-3">Accede a la mejor formación online y consigue tu plaza con nuestros recursos y docentes expertos.</p>
+          <div className="d-flex justify-content-center mt-4 gap-3">
+            <Link to="/register" className="btn btn-light text-primary btn-lg">Registrarse</Link>
+            <Link to="/login" className="btn btn-outline-light btn-lg">Iniciar sesión</Link>
+          </div>
+        </div>
+      </section>
 
         {/* CURSOS */}
       <section id="cursos" className="py-5 bg-white text-center">
@@ -82,7 +72,7 @@ const Home = () => {
                     <div className="card-body">
                       <h3 className="card-title">{curso.name}</h3>
                       <p className="card-text">{curso.description}</p>
-                      <Link to={`/curso/${curso.id}`} className="btn btn-primary mt-3">Ver Detalles</Link>
+                      <Link to={`/curso/${curso.id}`} className="btn btn-outline-primary mt-3 w-100">Ver Detalles</Link>
                     </div>
                   </div>
                 </div>
@@ -90,41 +80,6 @@ const Home = () => {
               ) : (
                 <p>No hay cursos disponibles en este momento.</p>
               )}
-          </div>
-        </div>
-      </section>
-
-     {/* BLOG / NOTICIAS */}
-      <section className="py-5 bg-light text-center">
-        <div className="container">
-          <h2 className="mb-4">Últimas Noticias</h2>
-          <div className="row g-4">
-            {blogPosts.length > 0 ? (
-              blogPosts.map((post, index) => (
-                <div key={index} className="col-md-4">
-                  <div className="card h-100 shadow-sm">
-                    {post.image && (
-                      <img 
-                        src={`${apiUrl}/uploads/${post.image}`} 
-                        className="card-img-top" 
-                        alt={post.titulo} 
-                        onError={(e) => {
-                          e.target.onerror = null; // evita bucle si la imagen por defecto también falla
-                          e.target.src = "/image_not_found.png"; // ruta de imagen por defecto (public/)
-                        }}
-                      />
-                    )}
-                    <div className="card-body">
-                      <h5 className="card-title">{post.titulo}</h5>
-                      <p className="card-text">{post.contenido.slice(0, 100)}...</p>
-                      <a href={`/blog/${post.id}`} className="btn btn-primary btn-sm mt-2">Leer más</a>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p>No hay publicaciones recientes.</p>
-            )}
           </div>
         </div>
       </section>
@@ -200,18 +155,25 @@ const Home = () => {
         </div>
       </section>
 
+      {/* CTA Final */}
       <section className="py-5 text-center bg-primary text-white">
         <div className="container">
           <h2 className="mb-4">¿Estás listo para comenzar?</h2>
           <p className="mb-4">Inscríbete hoy y empieza tu camino hacia una plaza fija.</p>
-          <a href="/register" className="btn btn-light text-primary btn-lg">Quiero Inscribirme</a>
+          <Link to="/register" className="btn btn-light text-primary btn-lg">Quiero Inscribirme</Link>
         </div>
       </section>
 
+      {/* Footer */}
       <footer className="bg-dark text-white py-4">
         <div className="container text-center">
           <p>© 2025 MyAcademy. Todos los derechos reservados.</p>
           <div className="d-flex justify-content-center gap-3 mt-2">
+            <a href="/politica-privacidad" className="text-white">Política de privacidad</a>
+            <a href="/terminos-condiciones" className="text-white">Términos y condiciones</a>
+            <a href="/contacto" className="text-white">Contacto</a>
+          </div>
+          <div className="d-flex justify-content-center gap-3 mt-3">
             <a href="https://facebook.com" className="text-white"><i className="bi bi-facebook"></i></a>
             <a href="https://instagram.com" className="text-white"><i className="bi bi-instagram"></i></a>
             <a href="https://twitter.com" className="text-white"><i className="bi bi-twitter-x"></i></a>

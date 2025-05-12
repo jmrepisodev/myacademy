@@ -5,10 +5,6 @@ exports.getAllVideoclases = async (req, res) => {
   try {
     const [results] = await db.query('SELECT * FROM videoclases'); // Usamos async/await para obtener los resultados de la base de datos
 
-    // Si no se encontraron videoclases
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'No se ha encontrado ningún Videoclase' });
-    }
 
     res.json(results);
   } catch (error) {
@@ -40,9 +36,6 @@ exports.getAllVideoclaseByTema = async (req, res) => {
     const temaId = req.params.id;
     const [results] = await db.query('SELECT * FROM videoclases WHERE tema_id = ?', [temaId]);
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'No se ha encontrado ningún Videoclase' });
-    }
 
     //res.json(results); // Retorna el primer resultado ya que es único
     res.json(results[0] || {}); // solo una videoclases por tema (ajusta si hay más)
@@ -77,7 +70,7 @@ exports.storeVideoclase = async (req, res) => {
       const videoFile = req.file;
       if (!videoFile) return res.status(400).json({ error: 'No se ha subido ningún archivo de video' });
 
-      const video_url = videoFile.filename;
+      const video_url = `videos/${videoFile}`
 
       const [result] = await db.query('INSERT INTO videoclases SET ?', {
           name,

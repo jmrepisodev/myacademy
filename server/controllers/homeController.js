@@ -7,9 +7,6 @@ exports.getAllFaqs= async (req, res) => {
   
       const [results] = await db.query('SELECT * FROM faqs WHERE publicada = 1 ORDER BY orden ASC');
   
-      if (results.length === 0) {
-        return res.status(404).json({ error: 'No hay noticias recientes' });
-      }
   
       res.json(results); // Retorna el primer resultado ya que es único
     } catch (error) {
@@ -34,10 +31,6 @@ exports.getApprovedTestimonials = async (req, res) => {
     try {
         const [results] = await db.query(query);
 
-        if (results.length === 0) {
-        return res.status(404).json({ error: 'No se ha encontrado ningún testimonio' });
-        }
-
         res.json(results);
     } catch (error) {
         // Manejo de errores
@@ -47,16 +40,13 @@ exports.getApprovedTestimonials = async (req, res) => {
 };
 
 
-    // Muestra todas las preguntas frecuentes publicadas
+    // Muestra todos los testimonios por curso
     exports.getTestimonialsByCurso= async (req, res) => {
       const curso_id = req.params.id;
       try {
     
         const [results] = await db.query('SELECT * FROM testimonios WHERE curso_id = ?', [curso_id]);
     
-        if (results.length === 0) {
-          return res.status(404).json({ error: 'No hay testimonios en este momento' });
-        }
     
         res.json(results);
       } catch (error) {

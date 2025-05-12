@@ -40,8 +40,8 @@ exports.getDashboard = async (req, res) => {
     res.status(500).json({ error: 'Error al cargar el dashboard' });
   }
 };
-
-// Muestra todas las categorías en función del curso u oposición
+/*
+// Muestra todas las Cursos en función del curso u oposición
 exports.getAllCursos= async (req, res) => {
   try {
 
@@ -57,8 +57,100 @@ exports.getAllCursos= async (req, res) => {
     return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
   }
 };
+*/
+/*
+// Mostrar todos los cursos, con paginación
+exports.getAllCursos = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
 
-// Muestra todas las categorías en función del curso u oposición
+    const [results] = await db.query('SELECT * FROM cursos LIMIT ? OFFSET ?', [limit, offset]);
+    const [[{ total }]] = await db.query('SELECT COUNT(*) AS total FROM cursos');
+
+    res.json({
+      cursos: results,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+      return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
+  }
+};
+*/
+
+//Muestra todos los cursos, con filtros opcionales y paginación
+exports.getAllCursos = async (req, res) => {
+  try {
+    // Parámetros de paginación
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Parámetros de filtro opcionales
+    const query = req.query.query?.toLowerCase() || '';
+    const estado = req.query.estado || '';
+    const profesor = req.query.profesor || '';
+
+    // Armado dinámico del WHERE
+    let whereClauses = [];
+    let params = [];
+
+    if (query) {
+      whereClauses.push('(LOWER(name) LIKE ? OR id LIKE ?)');
+      params.push(`%${query}%`, `%${query}%`);
+    }
+
+    if (estado) {
+      whereClauses.push('status = ?');
+      params.push(estado);
+    }
+
+    if (profesor) {
+      whereClauses.push('profesor_id = ?');
+      params.push(profesor);
+    }
+
+    const whereSql = whereClauses.length ? 'WHERE ' + whereClauses.join(' AND ') : '';
+/*
+    // Consulta paginada
+    const [results] = await db.query(
+      `SELECT * FROM cursos ${whereSql} LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+*/
+    // Consulta paginada
+    const [results] = await db.query(
+      `SELECT c.*, u.name AS profesor_name 
+      FROM cursos c 
+      LEFT JOIN usuarios u ON c.profesor_id = u.id 
+      ${whereSql} LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+
+    // Conteo total con los mismos filtros
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) AS total FROM cursos ${whereSql}`,
+      params
+    );
+
+    res.json({
+      cursos: results,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error('Error en getAllCursos:', error);
+    return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
+  }
+};
+
+
+
+// Muestra todas las Cursos en función del curso u oposición
 exports.getAllCursosByUser= async (req, res) => {
   try {
     const userId = req.params.id; //id como parámetro
@@ -72,9 +164,6 @@ exports.getAllCursosByUser= async (req, res) => {
       [userId]
     );
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'subcategoria no encontrada' });
-    }
 
     res.json(results); // Retorna el primer resultado ya que es único
   } catch (error) {
@@ -90,7 +179,7 @@ exports.getCursoById = async (req, res) => {
     const [results] = await db.query('SELECT * FROM cursos WHERE id = ?', [cursoId]);
 
     if (results.length === 0) {
-      return res.status(404).json({ error: 'Categoría no encontrada' });
+      return res.status(404).json({ error: 'Curso no encontrada' });
     }
 
     res.json(results[0]); // Retorna el primer resultado ya que es único
@@ -104,10 +193,10 @@ exports.getCursoById = async (req, res) => {
 exports.storeCurso = async (req, res) => {
   try {
     const data = req.body;
-
+    
     const [results] = await db.query('INSERT INTO cursos SET ?', [data]);
 
-    res.status(201).json({ message: 'Categoría creada satisfactoriamente', id: results.insertId });
+    res.status(201).json({ message: 'Curso creado satisfactoriamente', id: results.insertId });
   } catch (error) {
       // Manejo de errores
       return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
@@ -119,17 +208,28 @@ exports.storeCurso = async (req, res) => {
 exports.updateCurso = async (req, res) => {
   try {
     const cursoId = req.params.id;
-    const cursoData = req.body;
+
+    const { name, description, image, status, profesor_id } = req.body;
+
+    const cursoData = {
+      name,
+      description,
+      image,
+      status,
+      profesor_id,
+      updated_at: new Date()
+    };
 
     const [results] = await db.query('UPDATE cursos SET ? WHERE id = ?', [cursoData, cursoId]);
 
     if (results.affectedRows === 0) {
-      return res.status(404).json({ error: 'Categoría no encontrada' });
+      return res.status(404).json({ error: 'Curso no encontrada' });
     }
 
-    res.json({ message: 'Categoría actualizada satisfactoriamente' });
+    res.json({ message: 'Curso actualizada satisfactoriamente' });
   } catch (error) {
     // Manejo de errores
+    console.log(error)
     return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
   }
 };
@@ -142,10 +242,10 @@ exports.deleteCurso = async (req, res) => {
     const [results] = await db.query('DELETE FROM cursos WHERE id = ?', [cursoId]);
 
     if (results.affectedRows === 0) {
-      return res.status(404).json({ error: 'Categoría no encontrada' });
+      return res.status(404).json({ error: 'Curso no encontrada' });
     }
 
-    res.json({ message: 'Categoría eliminada satisfactoriamente' });
+    res.json({ message: 'Curso eliminada satisfactoriamente' });
   } catch (error) {
     // Manejo de errores
     return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
@@ -187,7 +287,7 @@ exports.getUsuariosPorCurso = async (req, res) => {
 
   try {
       const [rows] = await db.query(`
-          SELECT u.id, u.name, u.email, u.rol, u.image
+          SELECT u.id, u.name, u.email, u.rol, u.image, u.status
           FROM usuarios u
           INNER JOIN usuarios_cursos uc ON u.id = uc.usuario_id
           WHERE uc.curso_id = ?
@@ -199,3 +299,16 @@ exports.getUsuariosPorCurso = async (req, res) => {
       res.status(500).json({ error: 'Error al obtener alumnos inscritos' });
   }
 };
+
+//Dar de baja un alumno de un curso
+exports.anularMatriculaCurso = async (req, res) => {
+  const { cursoId, usuarioId } = req.params;
+  try {
+      await db.query('DELETE FROM usuarios_cursos WHERE curso_id = ? AND usuario_id = ?', [cursoId, usuarioId]);
+      res.status(200).json({ message: 'Alumno dado de baja del curso correctamente' });
+  } catch (error) {
+      console.error('Error al eliminar relación usuario-curso:', error);
+      res.status(500).json({ message: 'Error al dar de baja al alumno del curso' });
+  }
+};
+

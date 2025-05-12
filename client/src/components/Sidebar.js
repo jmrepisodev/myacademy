@@ -13,56 +13,65 @@ function Sidebar({ usuario }) {
   };
 
   return (
-    <nav className="bg-dark text-white d-flex flex-column p-3 vh-100 shadow-sm" style={{ width: '260px' }}>
-      {/* Imagen y nombre del usuario */}
+    <nav className="bg-dark text-white d-flex flex-column p-3 vh-100 shadow-sm" style={{  width: 'min(100%, 260px)' }}>
+      {/* Usuario (condicional: imagen y nombre solo visibles en md o más) */}
       {usuario && (
         <div className="text-center mb-4">
           <img
             src={`${apiUrl}/uploads/${usuario.image}`}
             alt="Perfil"
             className="rounded-circle border border-light mb-2"
-            style={{ width: '100px', height: '100px' }}
+            style={{ width: '50px', height: '50px' }}
             onError={(e) => {
               e.target.onerror = null;
               e.target.src = '/image_not_found.png';
             }}
           />
-          <h5 className="mb-0">{usuario.name}</h5>
-          <small className="text-secondary">{usuario.email}</small>
+          <div className="d-none d-md-block">
+            <h6 className="mb-0">{usuario.name}</h6>
+            <small className="text-secondary">{usuario.email}</small>
+          </div>
         </div>
       )}
 
-      {/* Enlaces de navegación */}
-      <ul className="nav nav-pills flex-column mb-auto fs-5">
+      {/* Navegación */}
+      <ul className="nav nav-pills flex-column mb-auto fs-5 text-center text-md-start">
         <li className="nav-item mb-2">
-          <Link to="/usuario/perfil" className="nav-link text-white d-flex align-items-center gap-2">
-            <FaUser /> Mi Perfil
+          <Link to="/usuario/perfil" className="nav-link text-white d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+            <FaUser />
+            <span className="d-none d-md-inline">Mi Perfil</span>
           </Link>
         </li>
         <li className="nav-item mb-2">
-          <Link to="/" className="nav-link text-white d-flex align-items-center gap-2">
-            <FaHome /> Inicio
+          <Link to="/" className="nav-link text-white d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+            <FaHome />
+            <span className="d-none d-md-inline">Inicio</span>
           </Link>
         </li>
         <li className="nav-item mb-2">
-          <Link to="/usuario/configuracion" className="nav-link text-white d-flex align-items-center gap-2">
-            <FaCog /> Configuración
+          <Link to="/foros" className="nav-link text-white d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+            <FaHome />
+            <span className="d-none d-md-inline">Foro</span>
+          </Link>
+        </li>
+        <li className="nav-item mb-2">
+          <Link to="/usuario/configuracion" className="nav-link text-white d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+            <FaCog />
+            <span className="d-none d-md-inline">Configuración</span>
           </Link>
         </li>
       </ul>
 
-      {/* Separador y botón de logout */}
       <hr className="border-light mt-auto" />
-      <div>
-        <button className="btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2" onClick={handleLogout}>
-          <FaSignOutAlt /> Cerrar Sesión
-        </button>
-      </div>
+      <button
+        className="btn btn-outline-light w-100 d-flex align-items-center justify-content-center justify-content-md-start gap-2"
+        onClick={handleLogout}
+      >
+        <FaSignOutAlt />
+        <span className="d-none d-md-inline">Cerrar Sesión</span>
+      </button>
     </nav>
   );
 }
 
 export default Sidebar;
-
-
-

@@ -10,9 +10,21 @@ const PostValidation = [
   check('titulo').notEmpty().withMessage('El nombre es obligatorio').trim(),
   check('contenido').notEmpty().withMessage('El contenido es obligatorio').trim(),
   check('image')
-    .optional({ checkFalsy: true })  // solo se validará si no está vacío o si no es un valor "falsy" (null, undefined, '', etc.).
-    //.isURL().withMessage('URL no válida')
-    .matches(/\.(jpg|jpeg|png|gif|bmp|webp)$/i).withMessage('La URL debe contener una imagen válida (jpg, jpeg, png, gif, bmp, webp)')
+    .optional({ checkFalsy: true })
+    .custom((value) => {
+      const isRelative = value.startsWith('/');
+      const isAbsolute = /^https?:\/\//.test(value);
+
+      if (!isRelative && !isAbsolute) {
+        throw new Error('La imagen debe ser una URL absoluta o relativa válida');
+      }
+
+      if (!/\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(value)) {
+        throw new Error('La URL debe contener una imagen válida (jpg, jpeg, png, gif, bmp, webp)');
+      }
+
+      return true;
+    })
     .trim(),
   check('autor').notEmpty().withMessage('El autor es obligatorio').trim(),
 ];

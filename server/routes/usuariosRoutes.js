@@ -15,7 +15,8 @@ const storeValidation = [
     .isURL().withMessage('URL no válida')
     .matches(/\.(jpg|jpeg|png|gif|bmp|webp)$/i).withMessage('La URL debe contener una imagen válida (jpg, jpeg, png, gif, bmp, webp)')
     .trim(),
-  check('rol').optional({ checkFalsy: true }).isIn(['user', 'admin']).withMessage('El rol solo puede tomar los valores user o admin')
+  check('rol').optional({ checkFalsy: true }).isIn(['user', 'admin']).withMessage('El rol solo puede tomar los valores user o admin'),
+  check('status').optional().isIn(['activo', 'inactivo']).withMessage('El estado solo puede tomar los valores activo o inactivo')
  
 ];
 
@@ -42,11 +43,13 @@ const updateValidation = [
   // Validación del rol: opcional, solo puede ser 'user' o 'admin'
   check('rol')
     .optional({ checkFalsy: true })
-    .isIn(['user', 'admin']).withMessage('El rol solo puede tomar los valores user o admin'),
+    .isIn(['user', 'teacher', 'admin']).withMessage('El rol solo puede tomar los valores estudiante, profesor o administrador'),
 
   check('is_verified')
   .optional({ checkFalsy: true })
   .isIn(['1', '0']).withMessage('el estado de verificación solo puede tomar los valores 1 o 0'),
+
+  check('status').optional().isIn(['activo', 'inactivo']).withMessage('El estado solo puede tomar los valores activo o inactivo')
   
 ];
 

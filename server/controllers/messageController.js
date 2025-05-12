@@ -13,11 +13,6 @@ exports.getMessagesByTemaId = async (req, res) => {
         [temaId]
       ); // Usamos async/await para obtener los resultados de la base de datos
   
-      // Si no se encontraron mensajes
-      if (results.length === 0) {
-        console.log('No hay mensajes');
-        return res.status(404).json({ error: 'No se ha encontrado ningún mensaje' });
-      }
   
       res.json(results);
     } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, InputGroup, FormControl } from 'react-bootstrap';
+import { Table, Button, Modal, Form, InputGroup, FormControl, Row, Col } from 'react-bootstrap';
 import API from '../services/api';
 import Sidebar from '../components/SidebarAdmin';
 
@@ -9,9 +9,12 @@ function App() {
     const [showModal, setShowModal] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentUser, setCurrentUser] = useState({ name: '', email: '', rol: '' });
+    const [currentUser, setCurrentUser] = useState({ name: '', email: '', rol: '', status: '' });
     const [deleteUserId, setDeleteUserId] = useState(null);
+
     const [searchQuery, setSearchQuery] = useState('');
+    const [roleFilter, setRoleFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
 
     const [expandedUserId, setExpandedUserId] = useState(null);
     const [userCourses, setUserCourses] = useState([]);
@@ -20,26 +23,70 @@ function App() {
     const [limit] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
 
-    const [errorMessage, setErrorMessage] = useState('');
+    const [errors, setErrors] = useState([]);
+    const [success, setSuccess] = useState('');
+    
   
+    /*
+     //Devuelve resultados paginados, no filtrados desde el backend (solo filtro local)
     const fetchUsers = async () => {
       try {
         const res = await API.get(`/usuarios?page=${page}&limit=${limit}`);
-        setUsers(res.data.users);
-        setFilteredUsers(res.data.users);
+        setUsers(res.data.data);
+        setFilteredUsers(res.data.data);
         setTotalPages(res.data.totalPages);
+        setPage(res.data.page);
         setErrorMessage('');
       } catch (err) {
         console.error('Error al obtener usuarios', err);
         setErrorMessage('Error al intentar obtener la lista de usuarios');
       }
     };
-    
-    // useEffect actualizado para cambios de página
+
     useEffect(() => {
       fetchUsers();
-    }, [page]);
-    
+    }, [page, limit]);
+  */
+
+    //Devuelve resultados con filtros opcionales del backend y paginación
+    const fetchUsers = async () => {
+      try {
+
+        const queryParams = new URLSearchParams({
+          page: page,
+          limit,
+          query: searchQuery,
+          estado: statusFilter,
+          rol: roleFilter,
+      });
+
+        const res = await API.get(`/usuarios?${queryParams.toString()}`);
+        setUsers(res.data.users);
+        setFilteredUsers(res.data.users);
+        setTotalPages(res.data.totalPages);
+        setPage(res.data.page);
+        setErrors([]);
+      } catch (err) {
+          console.error('Error al obtener usuarios', err);
+          if (err.response) {
+            const data = err.response.data;
+            if (data.errors) {
+              setErrors(data.errors.map((err) => ({ msg: err.msg })));
+            } else if (data.error) {
+              setErrors([{ msg: data.error }]);
+            } else {
+              setErrors([{ msg: 'Error desconocido del servidor.' }]);
+            }
+          } else {
+            setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+          }
+      }
+    };
+
+    useEffect(() => {
+      fetchUsers();
+    }, [page, limit, searchQuery, statusFilter, roleFilter]);
+
     // Navegación de páginas
     const handleNextPage = () => {
       if (page < totalPages) setPage(prev => prev + 1);
@@ -47,14 +94,25 @@ function App() {
     const handlePrevPage = () => {
       if (page > 1) setPage(prev => prev - 1);
     };
-  
+
+ /* //filtros locales del frontend
     useEffect(() => {
-      const q = searchQuery.toLowerCase();
-      setFilteredUsers(users.filter(user =>
-        user.name.toLowerCase().includes(q) || user.id.toString().includes(q)
-      ));
-    }, [searchQuery, users]);
-  
+      const query = searchQuery.toLowerCase();
+    
+      const filtered = users.filter(user =>
+        (user.name.toLowerCase().includes(query) || user.email.toLowerCase().includes(query)) &&
+        (roleFilter === '' || user.rol === roleFilter) &&
+        (statusFilter === '' || user.status === statusFilter)
+      );
+    
+      setFilteredUsers(filtered);
+    }, [searchQuery, users, roleFilter, statusFilter]);
+ */
+
+    useEffect(() => {
+      setFilteredUsers(users); // Ya vienen filtrados del backend
+    }, [users]);
+
     const handleSave = async () => {
       try {
           if (isEditing) {
@@ -64,9 +122,21 @@ function App() {
           }
           setShowModal(false);
           fetchUsers();
+          setSuccess('Usuario guardadado con éxito')
       } catch (err) {
-          console.error('Error al guardar usuario', err);
-          setErrorMessage('Error al intentar guardar el usuario');
+          setSuccess('');
+          if (err.response) {
+            const data = err.response.data;
+            if (data.errors) {
+              setErrors(data.errors.map((err) => ({ msg: err.msg })));
+            } else if (data.error) {
+              setErrors([{ msg: data.error }]);
+            } else {
+              setErrors([{ msg: 'Error desconocido del servidor.' }]);
+            }
+          } else {
+            setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+          }
       }
     };
   
@@ -75,9 +145,22 @@ function App() {
         await API.delete(`/usuarios/delete/${deleteUserId}`);
         setShowDeleteConfirm(false);
         fetchUsers();
+        setSuccess('Usuario eliminado satisfactoriamente')
       } catch (err) {
           console.error('Error al eliminar usuario', err);
-          setErrorMessage('Error al intentar eliminar el usuario');
+          setSuccess('');
+          if (err.response) {
+            const data = err.response.data;
+            if (data.errors) {
+              setErrors(data.errors.map((err) => ({ msg: err.msg })));
+            } else if (data.error) {
+              setErrors([{ msg: data.error }]);
+            } else {
+              setErrors([{ msg: 'Error desconocido del servidor.' }]);
+            }
+          } else {
+            setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+          }
         }
     };
 
@@ -86,10 +169,23 @@ function App() {
         const res = await API.get(`/usuarios/${userId}/cursos`);
         setUserCourses(res.data);
         setExpandedUserId(userId);
+        setErrors([]);
       } catch (err) {
-        console.error('Error al obtener cursos del usuario:', err);
-        setUserCourses([]);
-        setExpandedUserId(userId); // aún expandimos aunque esté vacío
+          console.error('Error al obtener cursos del usuario:', err);
+          if (err.response) {
+            const data = err.response.data;
+            if (data.errors) {
+              setErrors(data.errors.map((err) => ({ msg: err.msg })));
+            } else if (data.error) {
+              setErrors([{ msg: data.error }]);
+            } else {
+              setErrors([{ msg: 'Error desconocido del servidor.' }]);
+            }
+          } else {
+            setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+          }
+          setUserCourses([]);
+          setExpandedUserId(userId); // aún expandimos aunque esté vacío
       }
     };
 
@@ -107,29 +203,61 @@ function App() {
             <div className="d-flex justify-content-between mb-3">
                 <Button onClick={() => {
                 setIsEditing(false);
-                setCurrentUser({ name: '', email: '', rol: '' });
+                setCurrentUser({ name: '', email: '', rol: '', status: 'activo' });
                 setShowModal(true);
                 }}>
                 Añadir Usuario
                 </Button>
 
-                <InputGroup style={{ width: '300px' }}>
-                <FormControl
-                    placeholder="Buscar por nombre o ID"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                </InputGroup>
+                <Row className="mb-3">
+                  <Col md={4}>
+                      <InputGroup>
+                          <FormControl
+                              style={{ width: '300px' }}
+                              placeholder="Buscar por nombre o email"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                          />
+                      </InputGroup>
+                  </Col>
+                  <Col md={3}>
+                      <Form.Select 
+                        style={{ width: '150px' }}
+                        value={roleFilter} 
+                        onChange={(e) => setRoleFilter(e.target.value)}
+                        >
+                          <option value="">Todos los roles</option>
+                          <option value="user">Estudiante</option>
+                          <option value="teacher">Profesor</option>
+                          <option value="admin">Administrador</option>
+                      </Form.Select>
+                  </Col>
+                  <Col md={3}>
+                      <Form.Select 
+                        style={{ width: '150px' }}
+                        value={statusFilter} 
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                      >
+                          <option value="">Todos los estados</option>
+                          <option value="activo">Activo</option>
+                          <option value="inactivo">Inactivo</option>
+                      </Form.Select>
+                  </Col>
+              </Row>
             </div>
 
-            {errorMessage && (
-              <div className="mb-3">
-                  <div className="alert alert-danger" role="alert">
-                  {errorMessage}
-                  </div>
-              </div>
-              )}
+            {success && <div className="alert alert-success">{success}</div>}
+            {errors.length > 0 && (
+            <div className="alert alert-danger">
+                <ul className="mb-0 ms-2">
+                {errors.map((err, index) => (
+                    <li key={index}>{err.msg}</li>
+                ))}
+                </ul>
+            </div>
+            )}
 
+            <p>Total de usuarios: {filteredUsers.length}</p>
             <Table striped bordered hover responsive>
             <thead>
               <tr>
@@ -137,6 +265,7 @@ function App() {
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Rol</th>
+                <th>Estado</th>
                 <th>Verificado</th>
                 <th>Última actividad</th>
                 <th>Acciones</th>
@@ -150,8 +279,9 @@ function App() {
                     <td>{user.name}</td>
                     <td>{user.email}</td>
                     <td>{user.rol}</td>
+                    <td>{user.status}</td>
                     <td>{user.is_verified ? 'Sí' : 'No'}</td>
-                    <td>{new Date(user.last_activity).toLocaleString()}</td>
+                    <td>{user.last_activity ? new Date(user.last_activity).toLocaleString() : '—'}</td>
                     <td>
                       <Button
                         variant="info"
@@ -264,12 +394,27 @@ function App() {
 
                     <Form.Group className="mb-3">
                         <Form.Label>Rol</Form.Label>
-                        <Form.Control
-                            type="text"
+                        <Form.Select
                             value={currentUser.rol}
                             onChange={(e) => setCurrentUser({ ...currentUser, rol: e.target.value })}
-                        />
+                        >
+                            <option value="">Seleccionar</option>
+                            <option value="user">Estudiante</option>
+                            <option value="teacher">Profesor</option>
+                            <option value="admin">Administrador</option>
+                        </Form.Select>
                     </Form.Group>
+
+                    <Form.Group className="mb-3">
+                      <Form.Label>Estado</Form.Label>
+                      <Form.Select
+                          value={currentUser.status || 'activo'}
+                          onChange={(e) => setCurrentUser({ ...currentUser, status: e.target.value })}
+                      >
+                          <option value="activo">Activo</option>
+                          <option value="inactivo">Inactivo</option>
+                      </Form.Select>
+                  </Form.Group>
 
   
                 </Form>

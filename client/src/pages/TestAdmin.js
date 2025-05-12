@@ -30,17 +30,30 @@ function TestsAdmin() {
     const [showDeleteQuestionConfirm, setShowDeleteQuestionConfirm] = useState(false);
     const [questionToDelete, setQuestionToDelete] = useState(null);
 
-    const [errorMessage, setErrorMessage] = useState('');
+    const [success, setSuccess] = useState('');
+    const [errors, setErrors] = useState([]);
+    
 
     const fetchTests = async () => {
         try {
             const res = await API.get('/tests');
             setTests(res.data);
             setFilteredTests(res.data);
-            setErrorMessage('');
+            setErrors([]);
         } catch (err) {
             console.error('Error al obtener tests', err);
-            setErrorMessage('Error al intentar obtener la lista de tests');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
 
@@ -48,9 +61,21 @@ function TestsAdmin() {
         try {
             const res = await API.get('/temas');
             setTemasDisponibles(res.data);
+            setErrors([]);
         } catch (err) {
             console.error('Error al obtener temas', err);
-            setErrorMessage('Error al intentar obtener la lista de temas');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
 
@@ -64,8 +89,20 @@ function TestsAdmin() {
             try {
                 const res = await API.get(`/tests/${testId}/questions`);
                 setTestQuestions(prev => ({ ...prev, [testId]: res.data }));
+                setErrors([])
             } catch (err) {
-                console.error('Error al obtener preguntas:', err);
+                if (err.response) {
+                    const data = err.response.data;
+                    if (data.errors) {
+                      setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                    } else if (data.error) {
+                      setErrors([{ msg: data.error }]);
+                    } else {
+                      setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                    }
+                  } else {
+                    setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+                  }
                 return;
             }
         }
@@ -102,9 +139,22 @@ function TestsAdmin() {
             }
             setShowModal(false);
             fetchTests();
+            setSuccess('Test guardado satisfactoriamente')
         } catch (err) {
             console.error('Error al guardar test', err.response?.data || err);
-            setErrorMessage('Error al intentar guardar el test');
+            setSuccess('');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
 
@@ -113,9 +163,22 @@ function TestsAdmin() {
             await API.delete(`/tests/delete/${deleteTestId}`);
             setShowDeleteConfirm(false);
             fetchTests();
+            setSuccess('Test eliminado satisfactoriamente')
         } catch (err) {
             console.error('Error al eliminar test', err);
-            setErrorMessage('Error al intentar eliminar el test');
+            setSuccess('');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
 
@@ -125,9 +188,22 @@ function TestsAdmin() {
             const updatedQuestions = await API.get(`/tests/${editingQuestion.test_id}/questions`);
             setTestQuestions(prev => ({ ...prev, [editingQuestion.test_id]: updatedQuestions.data }));
             setShowQuestionModal(false);
+            setSuccess('Pregunta guardada satisfactoriamente')
         } catch (err) {
             console.error('Error al actualizar pregunta:', err);
-            alert('No se pudo actualizar la pregunta.');
+            setSuccess('');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
     
@@ -148,9 +224,22 @@ function TestsAdmin() {
             }));
             setShowDeleteQuestionConfirm(false);
             setQuestionToDelete(null);
+            setSuccess('Pregunta eliminada satisfactoriamente')
         } catch (err) {
             console.error('Error al eliminar pregunta:', err);
-            alert('No se pudo eliminar la pregunta.');
+            setSuccess('');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
     
@@ -185,11 +274,15 @@ function TestsAdmin() {
                         </InputGroup>
                     </div>
 
-                    {errorMessage && (
-                    <div className="mb-3">
-                        <div className="alert alert-danger" role="alert">
-                        {errorMessage}
-                        </div>
+                    
+                    {success && <div className="alert alert-success">{success}</div>}
+                    {errors.length > 0 && (
+                    <div className="alert alert-danger">
+                        <ul className="mb-0">
+                        {errors.map((err, index) => (
+                            <li key={index}>{err.msg}</li>
+                        ))}
+                        </ul>
                     </div>
                     )}
 
@@ -201,6 +294,8 @@ function TestsAdmin() {
                                 <th>Descripción</th>
                                 <th>Imagen</th>
                                 <th>Nº preguntas</th>
+                                <th>intentos max.</th>
+                                <th>tiempo max.</th>
                                 <th>Tema</th>
                                 <th>Acciones</th>
                             </tr>
@@ -223,6 +318,8 @@ function TestsAdmin() {
                                         }}
                                     />}</td>
                                 <td>{test.num_questions}</td>
+                                <td>{test.intentos_max}</td>
+                                <td>{test.tiempo_limite}</td>
                                 <td>{test.tema_id}</td>
                                 <td>
                                 <Button

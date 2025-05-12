@@ -2,6 +2,8 @@ import React, { useEffect, useState} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import API from '../services/api';
+import { FaClock, FaCalendarAlt, FaLaptop, FaCheckCircle, FaEuroSign, FaCertificate } from 'react-icons/fa';
+
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -30,23 +32,28 @@ const CourseDetail = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-            const [cursoRes, temasRes, testimoniosRes] = await Promise.all([
-                fetch(`${apiUrl}/api/cursos/${id}`),
-                fetch(`${apiUrl}/api/temas/curso/${id}`),
-                fetch(`${apiUrl}/api/testimonios/curso/${id}`)
-            ]);
-        
-            const [cursoData, temasData, testimoniosData] = await Promise.all([
-                cursoRes.json(),
-                temasRes.json(),
-                testimoniosRes.json()
-            ]);
-        
-            setCurso(cursoData);
-            setTemas(temasData);
-            setTestimonios(testimoniosData);
+              const [cursoRes, temasRes, testimoniosRes] = await Promise.all([
+                  fetch(`${apiUrl}/api/cursos/${id}`),
+                  fetch(`${apiUrl}/api/temas/curso/${id}`),
+                  fetch(`${apiUrl}/api/testimonios/curso/${id}`)
+              ]);
+          
+              const [cursoData, temasData, testimoniosData] = await Promise.all([
+                  cursoRes.json(),
+                  temasRes.json(),
+                  testimoniosRes.json()
+              ]);
+          
+              setCurso(cursoData);
+              setTemas(temasData);
+              setTestimonios(testimoniosData);
+              setMessage({ text: '', type: '' });
             } catch (error) {
-            console.error('Error al cargar datos del curso:', error);
+              console.error('Error al cargar datos del curso:', error);
+              setMessage({
+                text: 'Error al cargar los datos del curso',
+                type: 'danger'
+              });
             }
         };
         
@@ -83,6 +90,7 @@ const CourseDetail = () => {
       const errorMsg =
         err.response?.data?.message || 'Ha ocurrido un error inesperado.';
         console.error('Error en inscripción:', err);
+        
 
       setMessage({
         text: `Error: ${errorMsg}`,
@@ -116,11 +124,17 @@ const CourseDetail = () => {
               }}
             />
             <div className="card-body">
-              <h2 className="card-title">{curso.name}</h2>
+              <h2 className="card-title text-primary fw-bold">{curso.name}</h2>
               <p className="card-text">{curso.description}</p>
               <div className="mt-3">
                 <span className="badge bg-secondary me-2">{curso.modalidad}</span>
-                <span className="badge bg-success">€ {curso.precio}</span>
+                <span className="badge bg-success me-2">€ {curso.precio}</span>
+                {Boolean(curso.certificado_disponible) && (
+                  <span className="badge bg-info text-dark">
+                    <FaCertificate className="me-1" />
+                    Certificado
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -131,11 +145,43 @@ const CourseDetail = () => {
           <div className="card shadow-sm">
             <div className="card-body">
               <h4 className="card-title mb-3">Detalles del Curso</h4>
-              <ul className="list-group list-group-flush">
-                <li className="list-group-item"><strong>Duración:</strong> {curso.duracion}</li>
-                <li className="list-group-item"><strong>Requisitos:</strong> {curso.requisitos}</li>
-                <li className="list-group-item"><strong>Objetivos:</strong> {curso.objetivos}</li>
+              <ul className="list-group list-group-flush small">
+                <li className="list-group-item">
+                  <FaClock className="me-2 text-primary" />
+                  <strong>Duración:</strong> {curso.duracion || '—'}
+                </li>
+                <li className="list-group-item">
+                  <FaCalendarAlt className="me-2 text-primary" />
+                  <strong>Inicio:</strong> {curso.fecha_inicio ? new Date(curso.fecha_inicio).toLocaleDateString() : '—'}
+                </li>
+                <li className="list-group-item">
+                  <FaCalendarAlt className="me-2 text-primary" />
+                  <strong>Fin:</strong> {curso.fecha_fin ? new Date(curso.fecha_fin).toLocaleDateString() : '—'}
+                </li>
+                <li className="list-group-item">
+                  <FaLaptop className="me-2 text-primary" />
+                  <strong>Modalidad:</strong> {curso.modalidad}
+                </li>
+                <li className="list-group-item">
+                  <FaEuroSign className="me-2 text-success" />
+                  <strong>Precio:</strong> {curso.precio} €
+                </li>
+                {curso.certificado_disponible && (
+                  <li className="list-group-item text-success">
+                    <FaCertificate className="me-2" />
+                    Certificado incluido
+                  </li>
+                )}
+                <li className="list-group-item">
+                  <FaCheckCircle className="me-2 text-secondary" />
+                  <strong>Requisitos:</strong> {curso.requisitos || 'Ninguno'}
+                </li>
+                <li className="list-group-item">
+                  <FaCheckCircle className="me-2 text-secondary" />
+                  <strong>Objetivos:</strong> {curso.objetivos || 'Aprender y aprobar'}
+                </li>
               </ul>
+
               <div className="mt-4 d-grid">
                 <button className="btn btn-primary mt-2" onClick={() => handleEnrollClick(curso.id)}>
                   Inscribirme

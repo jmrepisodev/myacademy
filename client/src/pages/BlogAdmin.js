@@ -20,16 +20,21 @@ function NoticiasAdmin() {
   });
   const [deletePostId, setDeletePostId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+
+  const [errors, setErrors] = useState([]);
+  const [success, setSuccess] = useState('');
+ 
 
   const fetchPosts = async () => {
     try {
       const res = await API.get('/blog');
       setPosts(res.data);
       setFilteredPosts(res.data);
+
+      setErrors([]);
     } catch (err) {
-      console.error('Error al obtener posts', err);
-      setErrorMessage('Error al obtener noticias');
+        console.error('Error al obtener posts', err);
+        setErrors([{ msg: 'Error al obtener la lista de posts.' }]);
     }
   };
 
@@ -61,9 +66,24 @@ function NoticiasAdmin() {
 
       setShowModal(false);
       fetchPosts();
+
+      setSuccess('Post guardadado con éxito')
+     
     } catch (err) {
-      console.error('Error al guardar post', err);
-      setErrorMessage('Error al guardar la noticia');
+        console.error('Error al guardar el post', err);
+        setSuccess('');
+        if (err.response) {
+          const data = err.response.data;
+          if (data.errors) {
+            setErrors(data.errors.map((err) => ({ msg: err.msg })));
+          } else if (data.error) {
+            setErrors([{ msg: data.error }]);
+          } else {
+            setErrors([{ msg: 'Error desconocido del servidor.' }]);
+          }
+        } else {
+          setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+        }
     }
   };
 
@@ -72,9 +92,24 @@ function NoticiasAdmin() {
       await API.delete(`/blog/delete/${deletePostId}`);
       setShowDeleteConfirm(false);
       fetchPosts();
+
+      setSuccess('Post eliminado satisfactoriamente')
+     
     } catch (err) {
-      console.error('Error al eliminar post', err);
-      setErrorMessage('Error al eliminar la noticia');
+        console.error('Error al eliminar el post', err);
+        setSuccess('');
+        if (err.response) {
+          const data = err.response.data;
+          if (data.errors) {
+            setErrors(data.errors.map((err) => ({ msg: err.msg })));
+          } else if (data.error) {
+            setErrors([{ msg: data.error }]);
+          } else {
+            setErrors([{ msg: 'Error desconocido del servidor.' }]);
+          }
+        } else {
+          setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+        }
     }
   };
 
@@ -107,8 +142,16 @@ function NoticiasAdmin() {
           </InputGroup>
         </div>
 
-        {errorMessage && (
-          <div className="alert alert-danger">{errorMessage}</div>
+        
+        {success && <div className="alert alert-success">{success}</div>}
+        {errors.length > 0 && (
+          <div className="alert alert-danger">
+            <ul className="mb-0">
+              {errors.map((err, index) => (
+                <li key={index}>{err.msg}</li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <Table striped bordered hover responsive>

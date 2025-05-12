@@ -23,7 +23,7 @@ function Videoclase() {
         setError(null);
       } catch (err) {
         console.error('Error cargando videoclase:', err);
-        setError('No se pudo cargar la videoclase.');
+        setError('Error al cargar la videoclase.');
       }
     };
 

@@ -3,7 +3,7 @@ const router = express.Router();
 const videoclaseController = require('../controllers//videoclaseController');
 const { check, validationResult } = require('express-validator');
 const auth = require('../middleware/authMiddleware');
-const upload = require('../middleware/upload');
+const upload = require('../middleware/uploadHandler');
 
 // Validación de datos de Videoclase
 const VideoclaseValidation = [

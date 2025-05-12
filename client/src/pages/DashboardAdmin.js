@@ -9,6 +9,7 @@ const Dashboard = () => {
     videoclases: 0,
   });
   const [actividad, setActividad] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,8 +33,10 @@ const Dashboard = () => {
         });
   
        // setActividad(actividadRes.data || []);
+        setErrorMessage('');
       } catch (error) {
         console.error('Error al cargar datos del dashboard:', error);
+        setErrorMessage('Error al cargar los datos del dashboard');
       }
     };
   
@@ -49,6 +52,10 @@ const Dashboard = () => {
       <div className="col p-3">
         <div className="container-fluid py-4">
           <h2 className="mb-4">Bienvenido, Administrador 👋</h2>
+          
+          {/* Muestra mensajes de error */}
+          {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+
           <div className="row g-4 mb-4">
             <div className="col-md-4">
               <div className="card text-white bg-primary shadow-sm">

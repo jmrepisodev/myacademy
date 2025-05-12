@@ -30,18 +30,24 @@ import {
   );
 
 function EstadisticasAdmin() {
+
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [ultimosTests, setUltimosTests] = useState([]);
+
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const response = await API.get('/usuarios/user-stats');
         setStats(response.data);
+        setError(null);
       } catch (error) {
         console.error('Error fetching stats:', error);
+        setError('Error al cargar las estadísticas')
       } finally {
         setLoading(false);
       }
@@ -49,6 +55,20 @@ function EstadisticasAdmin() {
 
     fetchStats();
   }, []);
+
+  useEffect(() => {
+    const fetchUltimosTests = async () => {
+      try {
+        const response = await API.get('/tests/ultimos'); // Asegúrate de que esta ruta exista en tu backend
+        setUltimosTests(response.data);
+      } catch (error) {
+        console.error('Error al cargar los últimos tests:', error);
+      }
+    };
+    
+    fetchUltimosTests();
+  }, []);
+
 
   const handleShowModal = (user) => {
     setSelectedUser(user);
@@ -134,85 +154,140 @@ function EstadisticasAdmin() {
   );
 
   const renderCharts = () => (
-    <>
-      <Bar
-        data={{
-          labels: stats.map((user) => user.name),
-          datasets: [
-            {
-              label: 'Puntuación Promedio',
-              data: stats.map((user) => user.promedio_score),
-              backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            },
-          ],
-        }}
-        options={{
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-          },
-        }}
-      />
-      <Line
-        data={{
-          labels: stats.map((user) => user.name),
-          datasets: [
-            {
-              label: 'Tiempo Promedio (s)',
-              data: stats.map((user) => user.tiempo_promedio),
-              borderColor: 'rgba(153, 102, 255, 1)',
-              backgroundColor: 'rgba(153, 102, 255, 0.2)',
-            },
-          ],
-        }}
-        options={{
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-          },
-        }}
-      />
-      <Bar
-        data={{
-          labels: stats.map((user) => user.name),
-          datasets: [
-            {
-              label: 'Aciertos',
-              data: stats.map((user) => user.total_aciertos),
-              backgroundColor: 'rgba(75, 192, 192, 0.6)',
-            },
-            {
-              label: 'Errores',
-              data: stats.map((user) => user.total_errores),
-              backgroundColor: 'rgba(255, 99, 132, 0.6)',
-            },
-            {
-              label: 'En Blanco',
-              data: stats.map((user) => user.total_en_blanco),
-              backgroundColor: 'rgba(255, 206, 86, 0.6)',
-            },
-          ],
-        }}
-        options={{
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-            title: {
-              display: true,
-              text: 'Distribución de Respuestas por Usuario',
-            },
-          },
-        }}
-      />
-
-    </>
+    <div className="my-4">
+        <h5 className="mb-3 text-center">📈 Gráficos de Progreso</h5>
+          <div className='row g-3 mt-3'>
+              <div className="mb-5 mx-auto" style={{ maxWidth: '600px', height: '300px' }}>
+                  <Bar
+                    data={{
+                      labels: stats.map((user) => user.name),
+                      datasets: [
+                        {
+                          label: 'Puntuación Promedio',
+                          data: stats.map((user) => user.promedio_score),
+                          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          position: 'top',
+                        },
+                      },
+                    }}
+                  />
+              </div>
+  
+              <div className="mb-5 mx-auto" style={{ maxWidth: '600px', height: '300px' }}>
+                    <Line
+                      data={{
+                        labels: stats.map((user) => user.name),
+                        datasets: [
+                          {
+                            label: 'Tiempo Promedio (s)',
+                            data: stats.map((user) => user.tiempo_promedio),
+                            borderColor: 'rgba(153, 102, 255, 1)',
+                            backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        plugins: {
+                          legend: {
+                            position: 'top',
+                          },
+                        },
+                      }}
+                    />
+              </div>
+  
+              <div  className="mb-5 mx-auto" style={{ maxWidth: '600px', height: '300px' }}>
+                  <Bar
+                    data={{
+                      labels: stats.map((user) => user.name),
+                      datasets: [
+                        {
+                          label: 'Aciertos',
+                          data: stats.map((user) => user.total_aciertos),
+                          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        },
+                        {
+                          label: 'Errores',
+                          data: stats.map((user) => user.total_errores),
+                          backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        },
+                        {
+                          label: 'En Blanco',
+                          data: stats.map((user) => user.total_en_blanco),
+                          backgroundColor: 'rgba(255, 206, 86, 0.6)',
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          position: 'top',
+                        },
+                        title: {
+                          display: true,
+                          text: 'Distribución de Respuestas por Usuario',
+                        },
+                      },
+                    }}
+                  />
+              </div>
+          </div>
+    </div>
+  
   );
+
+
+  const renderUltimosTests = () => (
+    <div className="mt-5">
+      <h4>Últimos Tests Realizados</h4>
+      <Table striped bordered hover responsive>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Test</th>
+            <th>Curso</th>
+            <th>Aciertos</th>
+            <th>Errores</th>
+            <th>En Blanco</th>
+            <th>Puntuación</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ultimosTests.length === 0 ? (
+            <tr>
+              <td colSpan="8" className="text-center">No hay tests recientes</td>
+            </tr>
+          ) : (
+            ultimosTests.map((test, idx) => (
+              <tr key={idx}>
+                <td>{test.usuario_nombre}</td>
+                <td>{test.test_nombre}</td>
+                <td>{test.curso_nombre}</td>
+                <td>{test.aciertos}</td>
+                <td>{test.errores}</td>
+                <td>{test.en_blanco}</td>
+                <td>{test.puntuacion}</td>
+                <td>{new Date(test.fecha).toLocaleDateString()}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </Table>
+    </div>
+  );
+  
+  if (error) return <div className="alert alert-danger">{error}</div>;
+  if (!stats) return <div className="text-center my-5">Cargando estadísticas...</div>;
 
   return (
     <div className="container-fluid p-0 min-vh-100 d-flex">
@@ -221,7 +296,7 @@ function EstadisticasAdmin() {
         </div>
         <div className="col p-3">
             <div className="container mt-4">
-            <h2>Estadísticas de Usuarios</h2>
+            <h2 className='mb-3'>Estadísticas</h2>
             {loading ? (
                 <div className="d-flex justify-content-center">
                 <Spinner animation="border" variant="primary" />
@@ -231,6 +306,7 @@ function EstadisticasAdmin() {
                 <div id="stats-content">
                   {renderTable()}
                   {renderCharts()}
+                  {renderUltimosTests()}
                 </div>
                 <Button variant="primary" onClick={generatePDF} className="mt-3">
                   Generar Reporte en PDF

@@ -6,11 +6,6 @@ exports.getAllTests = async (req, res) => {
   try {
     const [results] = await db.query('SELECT * FROM tests'); // Usamos async/await para obtener los resultados de la base de datos
 
-    // Si no se encontraron tests
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'No se ha encontrado ningún Test' });
-    }
-
     res.json(results);
   } catch (error) {
     // Manejo de errores
@@ -25,10 +20,10 @@ exports.getTestById = async (req, res) => {
     const [results] = await db.query('SELECT * FROM tests WHERE id = ?', [testId]);
 
     if (results.length === 0) {
-      return res.status(404).json({ error: 'Test no encontrada' });
+      return res.status(404).json({ error: 'Test no encontrado' });
     }
 
-    res.json(results[0]); // Retorna el primer resultado ya que es único
+    res.json(results[0]); // Retorna el primer resultado, ya que es único
   } catch (error) {
     // Manejo de errores
     return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
@@ -41,11 +36,7 @@ exports.getAllTestByTema = async (req, res) => {
     const temaId = req.params.id;
     const [results] = await db.query('SELECT * FROM tests WHERE tema_id = ?', [temaId]);
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'No se ha encontrado ningún test' });
-    }
-
-    res.json(results); // Retorna el primer resultado ya que es único
+    res.json(results); 
   } catch (error) {
     // Manejo de errores
     return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
@@ -58,11 +49,7 @@ exports.getAllQuestionsByTest = async (req, res) => {
     const testId = req.params.id;
     const [results] = await db.query('SELECT * FROM preguntas WHERE test_id = ?', [testId]);
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'No se ha encontrado ningún test' });
-    }
-
-    res.json(results); // Retorna el primer resultado ya que es único
+    res.json(results); 
   } catch (error) {
     // Manejo de errores
     return res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
@@ -129,6 +116,7 @@ exports.saveResultTest = async (req, res) => {
   const testId = req.params.id;
   const { aciertos, errores, en_blanco, score, timeTaken, respuestas } = req.body;
   const user_id = req.user.id; //id como parte de jwt token
+  const intento_numero= parseInt(req.intento_numero)+1; //obtiene el número de intento del middleware
 
   const connection = await db.getConnection(); // Obtener conexión del pool
   try {
@@ -136,9 +124,10 @@ exports.saveResultTest = async (req, res) => {
 
       // Insertar resultado principal
       const [result] = await connection.query(
-        `INSERT INTO resultados (aciertos, errores, en_blanco, score, timeTaken, test_id, user_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [aciertos, errores, en_blanco, score, timeTaken, testId, user_id]
+        `INSERT INTO resultados 
+        (aciertos, errores, en_blanco, score, timeTaken, test_id, user_id, intento_numero)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [aciertos, errores, en_blanco, score, timeTaken, testId, user_id, intento_numero]
       );
 
       const resultado_id = result.insertId;
@@ -171,7 +160,7 @@ exports.saveResultTest = async (req, res) => {
       connection.release();
   }
 };
-
+//Obtener todos los resultados de un test
 exports.getAllResultsByTest = async (req, res) => {
     const resultadoId = req.params.id;
     console.log(resultadoId)
@@ -182,10 +171,7 @@ exports.getAllResultsByTest = async (req, res) => {
         `SELECT * FROM resultados WHERE id = ?`,[resultadoId]
       );
 
-      if (resultadoRows.length === 0) {
-        return res.status(404).json({ error: 'Resultado no encontrado' });
-      }
-
+      
       const resultado = resultadoRows[0];
 
       // Obtener las respuestas individuales
@@ -221,3 +207,31 @@ exports.getAllResultsByTest = async (req, res) => {
 };
 
 
+exports.getUltimosResultados = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        r.id AS resultado_id,
+        u.name AS usuario_nombre,
+        t.name AS test_nombre,
+        c.name AS curso_nombre,
+        r.aciertos,
+        r.errores,
+        r.en_blanco,
+        r.score AS puntuacion,
+        r.created_at AS fecha
+      FROM resultados r
+      JOIN usuarios u ON u.id = r.user_id
+      JOIN tests t ON t.id = r.test_id
+      JOIN temas te ON te.id = t.tema_id
+      JOIN cursos c ON c.id = te.curso_id
+      ORDER BY r.created_at DESC
+      LIMIT 20
+    `);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error al obtener los últimos resultados:', err);
+    res.status(500).json({ message: 'Error al obtener los últimos resultados' });
+  }
+};

@@ -23,17 +23,30 @@ function VideoclasesAdmin() {
     const [deleteClaseId, setDeleteClaseId] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const [errorMessage, setErrorMessage] = useState('');
+    const [success, setSuccess] = useState('');
+    const [errors, setErrors] = useState([]);
+    
 
     const fetchVideoclases = async () => {
         try {
             const res = await API.get('/videoclases');
             setVideoclases(res.data);
             setFilteredVideoclases(res.data);
-            setErrorMessage('');
+            setErrors([]);
         } catch (err) {
             console.error('Error al obtener videoclases', err);
-            setErrorMessage('Error al intentar obtener la lista de videoclases');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
 
@@ -41,9 +54,21 @@ function VideoclasesAdmin() {
         try {
             const res = await API.get('/temas');
             setTemasDisponibles(res.data);
+            setErrors([])
         } catch (err) {
             console.error('Error al obtener temas', err);
-            setErrorMessage('Error al intentar obtener la lista de temas');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
 
@@ -84,9 +109,22 @@ function VideoclasesAdmin() {
     
             setShowModal(false);
             fetchVideoclases();
+            setSuccess('Videoclase guardadda satisfactoriamente');
         } catch (err) {
             console.error('Error al guardar videoclase', err.response?.data || err);
-            setErrorMessage('Error al intentar guardar la videoclase');
+            setSuccess('');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
 
@@ -95,9 +133,22 @@ function VideoclasesAdmin() {
             await API.delete(`/videoclases/delete/${deleteClaseId}`);
             setShowDeleteConfirm(false);
             fetchVideoclases();
+            setErrors('Videoclase eliminada satisfactoriamente');
         } catch (err) {
             console.error('Error al eliminar videoclase', err);
-            setErrorMessage('Error al intentar eliminar la videoclase');
+            setSuccess('');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
 
@@ -136,11 +187,15 @@ function VideoclasesAdmin() {
                         </InputGroup>
                     </div>
 
-                    {errorMessage && (
-                    <div className="mb-3">
-                        <div className="alert alert-danger" role="alert">
-                        {errorMessage}
-                        </div>
+                    
+                    {success && <div className="alert alert-success">{success}</div>}
+                    {errors.length > 0 && (
+                    <div className="alert alert-danger">
+                        <ul className="mb-0">
+                        {errors.map((err, index) => (
+                            <li key={index}>{err.msg}</li>
+                        ))}
+                        </ul>
                     </div>
                     )}
 

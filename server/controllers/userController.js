@@ -23,7 +23,7 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 */
-
+/*
 //mostrar todos los usuarios, con paginación
 exports.getAllUsers = async (req, res) => {
   try {
@@ -49,6 +49,61 @@ exports.getAllUsers = async (req, res) => {
       res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+*/
+//mostrar todos los usuarios, con parámetros opcionales y con paginación
+exports.getAllUsers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const query = req.query.query?.toLowerCase() || '';
+    const estado = req.query.estado || '';
+    const rol = req.query.rol || '';
+
+    let whereClauses = [];
+    let params = [];
+
+    if (query) {
+      whereClauses.push('(LOWER(name) LIKE ? OR LOWER(email) LIKE ?)');
+      params.push(`%${query}%`, `%${query}%`);
+    }
+
+    if (estado) {
+      whereClauses.push('status = ?');
+      params.push(estado);
+    }
+
+    if (rol) {
+      whereClauses.push('rol = ?');
+      params.push(rol);
+    }
+
+    const whereSql = whereClauses.length ? 'WHERE ' + whereClauses.join(' AND ') : '';
+
+    const [results] = await db.query(
+      `SELECT * FROM usuarios ${whereSql} LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) AS total FROM usuarios ${whereSql}`,
+      params
+    );
+
+    res.json({
+      users: results,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+
 
 
 // Muestra una lista de todos los registros en formato JSON
@@ -60,10 +115,6 @@ exports.getRankingUsers= async (req, res) => {
             ORDER BY total_score DESC
         `);
 
-        // Si no se encontraron usuarios
-        if (results.length === 0) {
-            return res.status(404).json({ error: 'No se ha encontrado ningun usuario' });
-        }
 
         res.json(results);
     } catch (error) {
@@ -127,7 +178,7 @@ exports.storeUser= async (req, res) => {
 // Update user
 exports.updateUser = async (req, res) => {
     const userId = req.params.id;
-    const { name, email, rol, password, image, is_verified } = req.body;
+    const { name, email, rol, status, password, image, is_verified } = req.body;
     console.log("ID usuario: " + userId);
 
     try {
@@ -153,17 +204,16 @@ exports.updateUser = async (req, res) => {
             updates.push(`email='${email}'`);
         }
 
-        // Actualización de is_verified si es necesario
-        if (is_verified && is_verified !== user.is_verified) {
-            updates.push(`is_verified='${is_verified}'`);
-        }
-
          // Actualización de rol si es necesario
          if (rol && rol !== user.rol) {
             updates.push(`rol='${rol}'`);
         }
         
-        
+         // Actualización de rol si es necesario
+         if (status && status !== user.status) {
+            updates.push(`status='${status}'`);
+        }
+
         // Actualización de contraseña si es necesario
         if (password) {
             // Siempre que se proporciona una nueva contraseña, se debe actualizar
@@ -174,6 +224,11 @@ exports.updateUser = async (req, res) => {
         // Actualización de imagen si es necesario
         if (image && image !== user.image) {
             updates.push(`image='${image}'`);
+        }
+
+        // Actualización de is_verified si es necesario
+        if (is_verified && is_verified !== user.is_verified) {
+            updates.push(`is_verified='${is_verified}'`);
         }
 
 
@@ -247,25 +302,45 @@ exports.updateProfile = async (req, res) => {
 
 // Muestra los cursos inscritos del usuario
 exports.getCursosByUser = async (req, res) => {
-    const userId = req.user.id; // El ID del usuario se obtiene del middleware JWT
-    //const userId = req.params.id;
-    
+    const userId = req.user.id;
+
     try {
         const [cursos] = await db.query(`
-          SELECT c.id, c.name, c.description, c.image
-          FROM usuarios_cursos uc
-          JOIN cursos c ON c.id = uc.curso_id
-          WHERE uc.usuario_id = ?
+            SELECT 
+                c.id,
+                c.name,
+                c.image,
+                c.description,
+                c.modalidad,
+                c.duracion,
+                c.fecha_inicio,
+                c.fecha_fin,
+                c.status,
+                c.precio,
+                c.certificado_disponible,
+                uc.progreso,
+                uc.estado AS estado_matricula,
+                uc.fecha_inscripcion,
+                uc.completado,
+                uc.certificado_emitido,
+                u.id AS profesor_id,
+                u.name AS profesor_name,
+                u.image AS profesor_image
+            FROM usuarios_cursos uc
+            JOIN cursos c ON c.id = uc.curso_id
+            LEFT JOIN usuarios u ON c.profesor_id = u.id
+            WHERE uc.usuario_id = ?
         `, [userId]);
-    
+
         res.status(200).json(cursos);
-      } catch (err) {
+    } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error al obtener cursos del usuario' });
-      }
+    }
 };
 
-// Muestra los cursos inscritos del usuario
+
+// Muestra todos los resultados de un usuario
 exports.getResultadosByUser = async (req, res) => {
     const userId = req.user.id; // El ID del usuario se obtiene del middleware JWT
     
@@ -285,7 +360,7 @@ exports.getResultadosByUser = async (req, res) => {
       }
 };
 
-// Muestra todos los cursos inscritos del usuario (administrador)
+// Muestra todos los cursos inscritos del usuario (subtabla administrador)
 exports.getCursosPorUsuario = async (req, res) => {
     const userId = req.params.id;
   

@@ -1,57 +1,46 @@
 const db = require('../config/database');
 
 
-// Obtener preguntas con parámetros opcionales
+// Obtener preguntas con paginación y filtros opcionales
 exports.getAllQuestions = async (req, res) => {
     try {
-        const { limit, offset, testId } = req.query;
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const offset = (page - 1) * limit;
+        const testId = req.query.testId ? parseInt(req.query.testId, 10) : null;
 
-        // Construcción dinámica del query
         const queryParams = [];
-        let query = `SELECT * FROM preguntas`;
+        let baseQuery = `FROM preguntas`;
+        let whereClause = '';
 
-
-        // Añadir filtro por test_id si está presente
         if (testId) {
-            // Verificamos si ya existe una condición WHERE para no agregar un WHERE extra
-            if (queryParams.length > 0) {
-                query += ` AND test_id = ?`;
-            } else {
-                query += ` WHERE test_id = ?`;
-            }
-            queryParams.push(parseInt(testID, 10));
+            whereClause = ' WHERE test_id = ?';
+            queryParams.push(testId);
         }
 
-        // Ordenar aleatoriamente las preguntas
-        query += ` ORDER BY RAND()`;
-    
-        // Agregar límites y desplazamientos si están presentes
-        if (limit) {
-            query += ` LIMIT ?`;
-            queryParams.push(parseInt(limit, 10));
-        }
+        // 1. Obtener total de preguntas
+        const [countResult] = await db.query(`SELECT COUNT(*) as total ${baseQuery}${whereClause}`, queryParams);
+        const total = countResult[0].total;
 
-        if (offset) {
-            query += ` OFFSET ?`;
-            queryParams.push(parseInt(offset, 10));
-        }
+        // 2. Obtener preguntas paginadas
+        const [results] = await db.query(
+            `SELECT * ${baseQuery}${whereClause} LIMIT ? OFFSET ?`,
+            [...queryParams, limit, offset]
+        );
 
-        console.log(query);
-        // Ejecutar la consulta
-        const [results] = await db.query(query, queryParams);
-
-        // Si no se encontraron preguntas
-        if (results.length === 0) {
-            return res.status(404).json({ error: 'No se ha encontrado ninguna pregunta' });
-        }
-
-        res.json(results);
+        console.log(results)
+        res.json({
+            questions: results,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit)
+        });
     } catch (error) {
         console.error('Error interno del servidor: ', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
-  
+
 
 // Muestra un registro en función de su ID
 exports.getQuestionById = async (req, res) => {

@@ -23,7 +23,7 @@ const handleValidationErrors = (req, res, next) => {
 router.get('/faq', homeController.getAllFaqs);
 
 router.get('/testimonios', homeController.getApprovedTestimonials);
-router.get('/testimonios/curso/:id', homeController.getTestimonialsByCurso);
+router.get('/testimonios/curso/:id', validateID, homeController.getTestimonialsByCurso);
 
 
 module.exports = router;

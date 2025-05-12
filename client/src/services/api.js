@@ -1,7 +1,8 @@
 import axios from 'axios';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const API = axios.create({
-  baseURL: 'https://myacademy.alwaysdata.net/api',
+  baseURL: `${apiUrl}/api`,
 });
 
 // Incluir token automáticamente en cada petición

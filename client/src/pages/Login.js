@@ -49,19 +49,19 @@ const Login = () => {
         }
       }
     } catch (err) {
-      setSuccess('');
-      if (err.response) {
-        const data = err.response.data;
-        if (data.errors) {
-          setErrors(data.errors.map((err) => ({ msg: err.msg })));
-        } else if (data.error) {
-          setErrors([{ msg: data.error }]);
+        setSuccess('');
+        if (err.response) {
+          const data = err.response.data;
+          if (data.errors) {
+            setErrors(data.errors.map((err) => ({ msg: err.msg })));
+          } else if (data.error) {
+            setErrors([{ msg: data.error }]);
+          } else {
+            setErrors([{ msg: 'Error desconocido del servidor.' }]);
+          }
         } else {
-          setErrors([{ msg: 'Error desconocido del servidor.' }]);
+          setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
         }
-      } else {
-        setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
-      }
     }
   };
 

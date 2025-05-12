@@ -8,6 +8,7 @@ import './styles/styles.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
 
+//Importación de las rutas de la web
 import Home from './pages/Home';
 import Courses from './pages/Courses';
 import CourseDetail from './pages/CourseDetail';
@@ -38,17 +39,24 @@ import TestsAdmin from './pages/TestAdmin';
 import PreguntasAdmin from './pages/PreguntasAdmin';
 import EstadisticasAdmin from './pages/EstadisticasAdmin';
 import BlogAdmin from './pages/BlogAdmin';
+import ForosAdmin from './pages/ForosAdmin';
+import NotificacionesAdmin from './pages/NotificationsAdmin';
 
 import Navbar from './components/Navbar';
 
 import ForgotPassword from './pages/ForgotPassword';
 
+import ForoList from './components/ForoList';
+import HiloList from './components/HiloList';
+import MensajeList from './components/MensajeList';
+
+
 function App() {
   return (
     <Router>
       <Navbar />
-      <Routes>
 
+      <Routes>
          {/* Rutas públicas */}
         <Route path="/" element={<Home />} />
 
@@ -75,6 +83,8 @@ function App() {
           <Route path="/admin/preguntas" element={<PreguntasAdmin />} />
           <Route path="/admin/estadisticas" element={<EstadisticasAdmin />} />
           <Route path="/admin/noticias" element={<BlogAdmin />} />
+          <Route path="/admin/foros" element={<ForosAdmin />} />
+          <Route path="/admin/notificaciones" element={<NotificacionesAdmin />} />
         </Route>
         
         {/* Protegidas por rol: USER */}
@@ -88,6 +98,12 @@ function App() {
           <Route path="/temas/:temaId/videoclase" element={<Videoclase />} />
         </Route>
 
+        {/* Foro de discusión */}
+        <Route path="/foros" element={<ForoList />} />
+        <Route path="/foro/:slug" element={<HiloList />} />
+        <Route path="/foro/:slug/hilo/:hiloId" element={<MensajeList />} />
+
+        {/* Ruta para recuperar contraseña */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Página para acceso denegado */}

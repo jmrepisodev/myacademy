@@ -28,6 +28,8 @@ const videoclasesRoutes = require('./routes/videoclasesRoutes');
 const contactoRoutes = require('./routes/contactoRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const chatRoutes = require('./routes/messageRoutes');
+const foroRoutes = require('./routes/foroRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // 📁 Configuración de variables de entorno
 dotenv.config();
@@ -96,6 +98,8 @@ app.use('/api/videoclases', videoclasesRoutes);
 app.use('/api/contacto', contactoRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/foros', foroRoutes);
+app.use('/api/notificaciones', notificationRoutes);
 
 // Página principal o rutas públicas
 app.use('/', mainRoutes);

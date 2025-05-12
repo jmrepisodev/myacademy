@@ -5,6 +5,9 @@ import { FaEnvelope, FaLock, FaGraduationCap, FaFileAlt, FaChartBar } from 'reac
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ModalActualizarPerfil from '../components/ModalActualizarPerfil';
+import CursoCard from '../components/CursoCard';
+import EstadisticasGraficas from '../components/EstadisticasGraficas';
+import NotificationList from '../components/NotificationList';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -14,6 +17,8 @@ function PerfilUsuario() {
   const [cursos, setCursos] = useState([]);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  const [message, setMessage] = useState({ text: '', type: '' });
 
   useEffect(() => {
     const fetchPerfil = async () => {
@@ -27,9 +32,12 @@ function PerfilUsuario() {
         setUsuario(userRes.data);
         setResultados(resultadosRes.data);
         setCursos(cursosRes.data);
+        console.log(cursosRes.data)
+        
+        setError(null);
       } catch (err) {
         console.error(err);
-        setError('Error al cargar el perfil del usuario. Inténtalo de nuevo más tarde');
+        setError('Error al cargar el perfil de usuario');
       }
     };
 
@@ -40,11 +48,11 @@ function PerfilUsuario() {
     try {
       const res = await API.put('/usuarios/actualizarPerfil', datosActualizados);
         setUsuario(res.data);
-        alert('Perfil actualizado exitosamente.');
+        setMessage({ text: 'Perfil actualizado satisfactoriamente.', type: 'success' });
         setShowModal(false);
     } catch (err) {
-        alert('Error al actualizar el perfil.');
         console.error(err);
+        setMessage({ text: 'Error al intentar actualizar el perfil de usuario', type: 'danger' });
     }
   };
 
@@ -69,12 +77,23 @@ function PerfilUsuario() {
   return (
     <div className="container-fluid p-0 min-vh-100 d-flex">
         {/* Sidebar izquierda */}
-        <div className="col-md-2 col-lg-2 p-0 bg-dark">
+        <aside className="col-md-2 col-lg-2 p-0 bg-dark">
           <Sidebar usuario={usuario} />
-        </div>
+        </aside>
         {/* Contenido principal derecha */}
-        <div className="col p-3">
+        <main className="col-md-8 col-lg-8 p-3">
             <h1 className="mb-4">Mi Perfil</h1>
+
+            {/* Notificaciones del sistema */}
+            <NotificationList userId={usuario.id} />
+
+            {/* Muestra mensajes de error o de éxito */}
+            {message.text && (
+              <div className={`alert alert-${message.type} alert-dismissible fade show`} role="alert">
+                {message.text}
+                <button type="button" className="btn-close" onClick={() => setMessage({ text: '', type: '' })}></button>
+              </div>
+            )}
 
             {/* Información personal */}
             <div className="card mb-4 shadow-sm">
@@ -101,6 +120,46 @@ function PerfilUsuario() {
               </div>
             </div>
 
+             {/* Cursos matriculados */}
+             <div className="card mb-4">
+              <div className="card-header bg-primary text-white">
+                <FaGraduationCap className="me-2" />
+                Mis cursos
+              </div>
+
+              {!cursos || cursos.length === 0 ? (
+                <div className="card-body">
+                  <p className="mb-0">Aún no estás inscrito en ningún curso.</p>
+                </div>
+              ) : (
+                <div className="card-body">
+                  <div
+                    className="d-flex flex-wrap gap-3"
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {cursos.map((curso) => (
+                      <CursoCard key={curso.id} curso={curso} />
+                      
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Enlace a los foros */}
+            <div className="card mb-4">
+              <div className="card-header bg-info text-white">
+                <FaGraduationCap className="me-2" />
+                Accede a los Foros
+              </div>
+              <div className="card-body">
+                <p>Participa en los foros y comparte tus opiniones con otros usuarios.</p>
+                <Link to="/foros" className="btn btn-primary mt-2">
+                  Ir a los Foros
+                </Link>
+              </div>
+            </div>
+
             {/* 📊 Estadísticas */}
             <div className="card mb-4">
               <div className="card-header bg-info text-white">
@@ -120,7 +179,7 @@ function PerfilUsuario() {
                   <div className="col-md-4 mb-3">
                     <div className="card shadow-sm">
                       <div className="card-body">
-                        <h6 className="text-muted">Puntaje Promedio</h6>
+                        <h6 className="text-muted">Puntuación media</h6>
                         <h4>{averageScore}</h4>
                       </div>
                     </div>
@@ -128,7 +187,7 @@ function PerfilUsuario() {
                   <div className="col-md-4 mb-3">
                     <div className="card shadow-sm">
                       <div className="card-body">
-                        <h6 className="text-muted">Puntaje Total</h6>
+                        <h6 className="text-muted">Puntuación Total</h6>
                         <h4>{totalScore}</h4>
                       </div>
                     </div>
@@ -167,52 +226,8 @@ function PerfilUsuario() {
                   </div>
                 </div>
               </div>
-            </div>
 
-
-            {/* Cursos matriculados */}
-            <div className="card mb-4">
-              <div className="card-header bg-primary text-white">
-                <FaGraduationCap className="me-2" />
-                Mis cursos
-              </div>
-
-              {cursos.length === 0 ? (
-                <div className="card-body">
-                  <p className="mb-0">No estás inscrito en ningún curso aún.</p>
-                </div>
-              ) : (
-                <div className="card-body">
-                  <div
-                    className="d-flex flex-wrap gap-3"
-                    style={{ justifyContent: 'flex-start' }}
-                  >
-                    {cursos.map((curso) => (
-                      <div className="card" style={{ width: '18rem' }} key={curso.id}>
-                        <img 
-                          src={`${apiUrl}/uploads/${curso.image}`}
-                          className="card-img-top"
-                          alt={curso.name}
-                          onError={(e) => {
-                            e.target.onerror = null; // evita bucle si la imagen por defecto también falla
-                            e.target.src = "/image_not_found.png"; // ruta de imagen por defecto (public/)
-                          }}
-                        />
-                        <div className="card-body">
-                          <h5 className="card-title">{curso.name}</h5>
-                          <p className="card-text">{curso.description}</p>
-                          <Link
-                            to={`/cursos/${curso.id}/temas`}
-                            className="btn btn-primary mt-3"
-                          >
-                            Ver curso
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+               <EstadisticasGraficas resultados={resultados} />
             </div>
 
             {/* Historial de resultados */}
@@ -229,7 +244,7 @@ function PerfilUsuario() {
                       <th>Aciertos</th>
                       <th>Errores</th>
                       <th>En blanco</th>
-                      <th>Puntaje</th>
+                      <th>Puntuación</th>
                       <th>Duración</th>
                       <th>Fecha</th>
                     </tr>
@@ -276,7 +291,7 @@ function PerfilUsuario() {
               />
 
             </div>
-        </div>
+        </main>
       
     </div>
   );

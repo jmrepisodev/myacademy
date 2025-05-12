@@ -12,7 +12,7 @@ function Temas() {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentTema, setCurrentTema] = useState({
-        indice_tema: '',
+        orden: '',
         name: '',
         image: '',
         description: '',
@@ -23,17 +23,35 @@ function Temas() {
     const [searchQuery, setSearchQuery] = useState('');
     const [cursosDisponibles, setCursosDisponibles] = useState([]);
 
-    const [errorMessage, setErrorMessage] = useState('');
+    const [success, setSuccess] = useState('');
+    const [errors, setErrors] = useState([]);
+    
+     const handleApiError = (err) => {
+        console.error(err);
+        if (err.response) {
+            const data = err.response.data;
+            if (data.errors) {
+                setErrors(data.errors.map((e) => ({ msg: e.msg })));
+            } else if (data.error) {
+                setErrors([{ msg: data.error }]);
+            } else {
+                setErrors([{ msg: 'Error desconocido del servidor.' }]);
+            }
+        } else {
+            setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+        }
+    };
+
 
     const fetchTemas = async () => {
         try {
             const res = await API.get('/temas');
             setTemas(res.data);
             setFilteredTemas(res.data);
-            setErrorMessage('');
+            setErrors([]);
         } catch (err) {
             console.error('Error al obtener temas', err);
-            setErrorMessage('Error al intentar obtener la lista de temas');
+            setErrors([{ msg: 'Error al cargar la lista de temas' }]);
         }
     };
 
@@ -41,10 +59,11 @@ function Temas() {
     const fetchCursos = async () => {
         try {
             const res = await API.get('/cursos');
-            setCursosDisponibles(res.data);
+            setCursosDisponibles(res.data.cursos);
+            setErrors([])
         } catch (err) {
             console.error('Error al obtener cursos', err);
-            setErrorMessage('Error al intentar obtener la lista de cursos');
+            handleApiError(err);
         }
     };
 
@@ -70,7 +89,7 @@ useEffect(() => {
     const handleSave = async () => {
         try {
           const formData = new FormData();
-          formData.append('indice_tema', currentTema.indice_tema);
+          formData.append('orden', currentTema.orden);
           formData.append('name', currentTema.name);
           formData.append('image', currentTema.image);
           formData.append('description', currentTema.description);
@@ -92,9 +111,11 @@ useEffect(() => {
       
           setShowModal(false);
           fetchTemas();
+          setSuccess('Tema guardado satisfactoriamente')
         } catch (err) {
             console.error('Error al guardar tema', err);
-            setErrorMessage('Error al intentar guardar el tema');
+            setSuccess('');
+            handleApiError(err);
         }
       };
       
@@ -104,9 +125,11 @@ useEffect(() => {
             await API.delete(`/temas/delete/${deleteTemaId}`);
             setShowDeleteConfirm(false);
             fetchTemas();
+            setSuccess('Tema eliminado satisfactoriamente')
         } catch (err) {
             console.error('Error al eliminar tema', err);
-            setErrorMessage('Error al intentar eliminar el tema');
+            setSuccess('');
+            handleApiError(err);
         }
     };
 
@@ -124,7 +147,7 @@ useEffect(() => {
                         <Button onClick={() => {
                             setIsEditing(false);
                             setCurrentTema({
-                                indice_tema: '',
+                                orden: '',
                                 name: '',
                                 image: '',
                                 description: '',
@@ -145,11 +168,15 @@ useEffect(() => {
                         </InputGroup>
                     </div>
 
-                    {errorMessage && (
-                    <div className="mb-3">
-                        <div className="alert alert-danger" role="alert">
-                        {errorMessage}
-                        </div>
+                    
+                    {success && <div className="alert alert-success">{success}</div>}
+                    {errors.length > 0 && (
+                    <div className="alert alert-danger">
+                        <ul className="mb-0">
+                        {errors.map((err, index) => (
+                            <li key={index}>{err.msg}</li>
+                        ))}
+                        </ul>
                     </div>
                     )}
 
@@ -170,7 +197,7 @@ useEffect(() => {
                             {filteredTemas.map(tema => (
                                 <tr key={tema.id}>
                                     <td>{tema.id}</td>
-                                    <td>{tema.indice_tema}</td>
+                                    <td>{tema.orden}</td>
                                     <td>{tema.name}</td>
                                     <td>{tema.image && <img 
                                         src={`${apiUrl}/uploads/${tema.image}`} 
@@ -216,8 +243,8 @@ useEffect(() => {
                                     <Form.Label>Índice</Form.Label>
                                     <Form.Control
                                         type="number"
-                                        value={currentTema.indice_tema}
-                                        onChange={(e) => setCurrentTema({ ...currentTema, indice_tema: e.target.value })}
+                                        value={currentTema.orden}
+                                        onChange={(e) => setCurrentTema({ ...currentTema, orden: e.target.value })}
                                     />
                                 </Form.Group>
 

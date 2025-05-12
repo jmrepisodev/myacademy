@@ -6,10 +6,6 @@ const db = require('../config/database');
   
       const [results] = await db.query('SELECT * FROM blog WHERE publicado = 1 ORDER BY created_at DESC');
   
-      if (results.length === 0) {
-        return res.status(404).json({ error: 'No hay noticias recientes' });
-      }
-  
       res.json(results); // Retorna el primer resultado ya que es único
     } catch (error) {
       // Manejo de errores

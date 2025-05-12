@@ -15,6 +15,7 @@ const Blog = () => {
       .then(data => {
         setEntradas(data);
         setLoading(false);
+        setMensajeError('');
       })
       .catch(err => {
         console.error('Error al cargar entradas de blog:', err);
@@ -25,36 +26,40 @@ const Blog = () => {
 
   return (
     <div className="container py-5">
-      <h1 className="mb-4 text-primary">Últimas Novedades</h1>
+      <h1 className="mb-4 fs-2 text-center text-primary fw-bold">Últimas Novedades</h1>
 
       {loading && <div className="spinner-border text-primary" role="status"><span className="visually-hidden">Cargando...</span></div>}
 
       {mensajeError && <div className="alert alert-danger">{mensajeError}</div>}
 
       <div className="row g-4">
-        {entradas.map((post) => (
-          <div className="col-md-6 col-lg-4" key={post.id}>
-            <div className="card h-100 shadow-sm">
-              <img
-                src={`${apiUrl}/uploads/${post.image}`}
-                className="card-img-top"
-                alt={post.titulo}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "/image_not_found.png";
-                }}
-              />
-              <div className="card-body">
-                <h5 className="card-title">{post.titulo}</h5>
-                <p className="card-text">{post.contenido.slice(0, 120)}...</p>
-                <Link to={`/blog/${post.id}`} className="btn btn-outline-primary btn-sm mt-3">Leer más</Link>
-              </div>
-              <div className="card-footer text-muted small">
-                Publicado el {new Date(post.created_at).toLocaleDateString()}
+        {entradas.length > 0 ? (
+          entradas.map((post) => (
+            <div className="col-md-6 col-lg-4" key={post.id}>
+              <div className="card h-100 shadow-sm">
+                <img
+                  src={`${apiUrl}/uploads/${post.image}`}
+                  className="card-img-top"
+                  alt={post.titulo}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/image_not_found.png";
+                  }}
+                />
+                <div className="card-body">
+                  <h5 className="card-title">{post.titulo}</h5>
+                  <p className="card-text">{post.contenido.slice(0, 120)}...</p>
+                  <Link to={`/blog/${post.id}`} className="btn btn-outline-primary btn-sm mt-3">Leer más</Link>
+                </div>
+                <div className="card-footer text-muted small">
+                  Publicado el {new Date(post.created_at).toLocaleDateString()}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="text-center">No hay noticias disponibles en este momento.</p>
+        )}
       </div>
     </div>
   );

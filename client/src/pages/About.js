@@ -4,7 +4,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const About = () => {
   return (
     <section className="container py-5">
-      <h1 className="mb-4 fs-2 text-center">Sobre Nosotros</h1>
+      <h1 className="mb-4 fs-2 text-center text-primary fw-bold">Sobre nosotros</h1>
 
       <div className="row align-items-center mb-5">
         <div className="col-md-6">

@@ -75,6 +75,11 @@ exports.login = async (req, res) => {
       console.log(`las contraseñas no coinciden`)
       return res.status(401).json({ error: 'Credenciales incorrectas: email o contraseña no válidos' });
     }
+
+    if (user.status === 'inactivo') {
+      console.log(`usuario desactivado`)
+      return res.status(403).json({ error: 'Esta cuenta de usuario está temporalmente desactivada' });
+    }
 /*
     if(!user.is_verified){
       console.log('Usuario no verificado')

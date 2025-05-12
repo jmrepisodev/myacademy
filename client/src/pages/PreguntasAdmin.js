@@ -24,34 +24,70 @@ function PreguntasAdmin() {
     const [deletePreguntaId, setDeletePreguntaId] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const [errorMessage, setErrorMessage] = useState('');
+    const [success, setSuccess] = useState('');
+    const [errors, setErrors] = useState([]);
 
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [limit] = useState(3);
+    const [totalPaginas, setTotalPaginas] = useState(1);
+
+/*
     const fetchPreguntas = async () => {
         try {
             const res = await API.get('/preguntas');
             setPreguntas(res.data);
             setFilteredPreguntas(res.data);
-            setErrorMessage('');
+            setErrors([]);
         } catch (err) {
             console.error('Error al obtener preguntas', err);
-            setErrorMessage('Error al intentar obtener la lista de preguntas');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
+*/
+const fetchPreguntas = async (page = 1) => {
+    try {
+        const res = await API.get(`/preguntas?page=${page}&limit=${limit}`);
+        const { questions, totalPages } = res.data;
+
+        setPreguntas(questions);
+        setFilteredPreguntas(questions);
+        setTotalPaginas(totalPages);
+        setErrors([]);
+    } catch (err) {
+        console.error('Error al obtener preguntas', err);
+        setErrors([{ msg: 'Error al obtener preguntas.' }]);
+    }
+};
+
+
+    
 
     const fetchTests = async () => {
         try {
             const res = await API.get('/tests');
             setTestsDisponibles(res.data);
+            setErrors([]);
         } catch (err) {
             console.error('Error al obtener tests', err);
-            setErrorMessage('Error al intentar obtener la lista de tests');
+            setErrors([{ msg: 'Error al obtener los tests.' }]);
         }
     };
 
     useEffect(() => {
-        fetchPreguntas();
-        fetchTests();
-    }, []);
+        fetchPreguntas(paginaActual); // Carga la primera página al inicio
+        fetchTests(); // mantiene los tests
+    }, [paginaActual]);
 
     useEffect(() => {
         const q = searchQuery.toLowerCase();
@@ -61,6 +97,20 @@ function PreguntasAdmin() {
             )
         );
     }, [searchQuery, preguntas]);
+
+    // Navegación de páginas
+    const handleNextPage = () => {
+        if (paginaActual < totalPaginas) {
+            setPaginaActual(prev => prev + 1);
+        }
+    };
+    
+    const handlePrevPage = () => {
+        if (paginaActual > 1) {
+            setPaginaActual(prev => prev - 1);
+        }
+    };
+
 
     const handleSave = async () => {
         try {
@@ -77,9 +127,22 @@ function PreguntasAdmin() {
 
             setShowModal(false);
             fetchPreguntas();
+            setSuccess('Pregunta guardada satisfactoriamente')
         } catch (err) {
             console.error('Error al guardar pregunta', err.response?.data || err);
-            setErrorMessage('Error al intentar guardar la pregunta');
+            setSuccess('');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
 
@@ -88,9 +151,22 @@ function PreguntasAdmin() {
             await API.delete(`/preguntas/delete/${deletePreguntaId}`);
             setShowDeleteConfirm(false);
             fetchPreguntas();
+            setSuccess('Pregunta eliminada satisfactoriamente')
         } catch (err) {
             console.error('Error al eliminar pregunta', err);
-            setErrorMessage('Error al intentar eliminar la pregunta');
+            setSuccess('');
+            if (err.response) {
+                const data = err.response.data;
+                if (data.errors) {
+                  setErrors(data.errors.map((err) => ({ msg: err.msg })));
+                } else if (data.error) {
+                  setErrors([{ msg: data.error }]);
+                } else {
+                  setErrors([{ msg: 'Error desconocido del servidor.' }]);
+                }
+              } else {
+                setErrors([{ msg: 'No se pudo conectar con el servidor.' }]);
+              }
         }
     };
 
@@ -125,11 +201,15 @@ function PreguntasAdmin() {
                         </InputGroup>
                     </div>
 
-                    {errorMessage && (
-                    <div className="mb-3">
-                        <div className="alert alert-danger" role="alert">
-                        {errorMessage}
-                        </div>
+                    
+                    {success && <div className="alert alert-success">{success}</div>}
+                    {errors.length > 0 && (
+                    <div className="alert alert-danger">
+                        <ul className="mb-0">
+                        {errors.map((err, index) => (
+                            <li key={index}>{err.msg}</li>
+                        ))}
+                        </ul>
                     </div>
                     )}
 
@@ -177,6 +257,31 @@ function PreguntasAdmin() {
                             ))}
                         </tbody>
                     </Table>
+
+
+                      <div className="d-flex justify-content-between align-items-center my-4">
+                        <span>Página {paginaActual} de {totalPaginas}</span>
+                        <div>
+                            <Button
+                                variant="secondary"
+                                className="me-2"
+                                onClick={handlePrevPage}
+                                disabled={paginaActual === 1}
+                            >
+                                Anterior
+                            </Button>
+                            
+                            <Button
+                                variant="secondary"
+                                className="ms-2"
+                                onClick={handleNextPage}
+                                disabled={paginaActual === totalPaginas}
+                            >
+                                Siguiente
+                            </Button>
+                        </div>
+                        
+                    </div>
 
                     {/* Modal de pregunta */}
                     <Modal show={showModal} onHide={() => setShowModal(false)}>
